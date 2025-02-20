@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planètes en mouvement</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: black;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="planetCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('planetCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Ajuster la taille du canvas
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Créer les images
+        const earthImage = new Image();
+        const moonImage = new Image();
+        
+        // Position initiale
+        let angle = 0;
+        
+        function draw() {
+            // Effacer le canvas
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Centre du canvas
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // Dessiner la Terre
+            ctx.drawImage(earthImage, centerX - 100, centerY - 100, 200, 200);
+            
+            // Dessiner la Lune en orbite
+            const radius = 250; // Rayon de l'orbite
+            const moonX = centerX + Math.cos(angle) * radius - 50;
+            const moonY = centerY + Math.sin(angle) * radius - 50;
+            ctx.drawImage(moonImage, moonX, moonY, 100, 100);
+            
+            // Mettre à jour l'angle pour l'animation
+            angle += 0.01;
+            
+            requestAnimationFrame(draw);
+        }
+
+        // Charger les images
+        earthImage.src = 'earth.png';  // Assurez-vous que ces fichiers existent
+        moonImage.src = 'moon.png';    // dans le même dossier
+        
+        // Attendre que les images soient chargées
+        let imagesLoaded = 0;
+        function handleImageLoad() {
+            imagesLoaded++;
+            if (imagesLoaded === 2) {
+                draw();  // Démarrer l'animation quand les deux images sont chargées
+            }
+        }
+        
+        earthImage.onload = handleImageLoad;
+        moonImage.onload = handleImageLoad;
+    </script>
+</body>
+</html>
