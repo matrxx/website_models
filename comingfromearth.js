@@ -47,15 +47,6 @@ export default function PlanetsAnimation() {
       requestAnimationFrame(draw);
     }
 
-    // Charger les images
-    earthImage.onload = () => {
-      moonImage.onload = () => {
-        draw();
-      };
-      moonImage.src = 'C:/Users/lucas/OneDrive/Desktop/Projet/games website/Bomboclatt/moon.png';
-    };
-    earthImage.src = 'C:/Users/lucas/OneDrive/Desktop/Projet/games website/Bomboclatt/earth.png';
-
     return () => {
       window.removeEventListener('resize', resizeCanvas);
     };

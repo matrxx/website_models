@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earth & Moon System</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.min.js"
+            }
+        }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+
+        // Scene, Camera, Renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Load Textures
+        const textureLoader = new THREE.TextureLoader();
+        const earthTexture = textureLoader.load('https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg');
+        const moonTexture = textureLoader.load('https://threejs.org/examples/textures/moon_1024.jpg');
+
+        // Earth
+        const earthGeometry = new THREE.SphereGeometry(1, 64, 64);
+        const earthMaterial = new THREE.MeshStandardMaterial({ map: earthTexture });
+        const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+        scene.add(earth);
+
+        // Moon
+        const moonGeometry = new THREE.SphereGeometry(0.27, 32, 32);
+        const moonMaterial = new THREE.MeshStandardMaterial({ map: moonTexture });
+        const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+
+        // Moon Orbit Group
+        const moonOrbit = new THREE.Group();
+        moonOrbit.add(moon);
+        scene.add(moonOrbit);
+
+        // Light
+        const light = new THREE.PointLight(0xffffff, 1.5, 100);
+        light.position.set(5, 3, 5);
+        scene.add(light);
+
+        // Camera Position
+        camera.position.z = 4;
+
+        // Animation Variables
+        let angle = 0;
+
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Earth Rotation
+            earth.rotation.y += 0.002;
+
+            // Moon Rotation & Orbit
+            angle += 0.01;
+            moonOrbit.position.x = Math.cos(angle) * 2.5;
+            moonOrbit.position.z = Math.sin(angle) * 2.5;
+            moon.rotation.y += 0.004; // Moon rotates around itself
+            
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Resize Handling
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+
+    </script>
+</body>
+</html>
