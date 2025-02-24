@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Latéral</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #333;
+            color: #ddd;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background-color: #222;
+            padding-top: 60px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: width 0.3s;
+            overflow: hidden;
+        }
+
+        .sidebar.closed {
+            width: 60px;
+        }
+
+        .sidebar button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .menu {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0 0;
+        }
+
+        .menu li {
+            padding: 10px 20px;
+            white-space: nowrap;
+            overflow: hidden;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .sidebar.closed .menu li {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: white;
+            display: block;
+        }
+
+        .content {
+            margin-left: 260px;
+            padding: 20px;
+            transition: margin-left 0.3s;
+            flex-grow: 1;
+        }
+
+        .sidebar.closed + .content {
+            margin-left: 70px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <button onclick="toggleMenu()">☰</button>
+        <ul class="menu">
+            <li><a href="#">Accueil</a></li>
+            <li><a href="#">Page 1</a></li>
+            <li><a href="#">Page 2</a></li>
+            <li><a href="#">ComingFromEarth</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <h1>Contenu principal</h1>
+        <p>Voici le contenu de votre page.</p>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            document.querySelector('.sidebar').classList.toggle('closed');
+        }
+    </script>
+
+</body>
+</html>
