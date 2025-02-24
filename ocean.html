@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Underwater Scene</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
+    <!-- Load GSAP via classic script -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+</head>
+<body>
+
+<script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@latest/build/three.module.js";
+
+    console.log("Three.js loaded!");
+
+    // Scene, Camera, Renderer
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Fog (Darker as we go deeper)
+    scene.fog = new THREE.Fog(0x1e3a5f, 5, 50);
+    renderer.setClearColor(scene.fog.color);
+
+    // Lights
+    const light = new THREE.HemisphereLight(0x88ccff, 0x003366, 1);
+    scene.add(light);
+
+    // Ocean Floor
+    const oceanFloor = new THREE.Mesh(
+        new THREE.PlaneGeometry(50, 50),
+        new THREE.MeshStandardMaterial({ color: 0x003322 })
+    );
+    oceanFloor.rotation.x = -Math.PI / 2;
+    oceanFloor.position.y = -20;
+    scene.add(oceanFloor);
+
+    // Boat (Placeholder)
+    const boat = new THREE.Mesh(
+        new THREE.BoxGeometry(3, 1, 2),
+        new THREE.MeshStandardMaterial({ color: 0x8B4513 })
+    );
+    boat.position.y = 2;
+    scene.add(boat);
+
+    // Fisherman (Placeholder)
+    const fisherman = new THREE.Mesh(
+        new THREE.SphereGeometry(0.3),
+        new THREE.MeshStandardMaterial({ color: 0xffcc99 })
+    );
+    fisherman.position.set(0, 2.5, 0);
+    scene.add(fisherman);
+
+    // Fishing Line & Bait
+    const fishingLine = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 2.5, 0), new THREE.Vector3(0, 1, 0)]),
+        new THREE.LineBasicMaterial({ color: 0x000000 })
+    );
+    scene.add(fishingLine);
+
+    const bait = new THREE.Mesh(
+        new THREE.SphereGeometry(0.15),
+        new THREE.MeshStandardMaterial({ color: 0xff0000 })
+    );
+    bait.position.set(0, 1, 0);
+    scene.add(bait);
+
+    // Initial Camera Position (At the Surface)
+    camera.position.set(0, 5, 10);
+    camera.lookAt(0, 0, 0);
+
+    let scrollY = 0;
+
+    // Scroll Event - Move Camera & Darken Scene
+    window.addEventListener("scroll", () => {
+        scrollY = window.scrollY * 0.05; // Control scroll speed
+        camera.position.y = 5 - scrollY;
+        
+        // Darken the water as we go deeper
+        const depthFactor = Math.min(scrollY / 10, 1);
+        scene.fog.color.setRGB(0.12 - depthFactor * 0.1, 0.5 - depthFactor * 0.4, 0.8 - depthFactor * 0.5);
+        renderer.setClearColor(scene.fog.color);
+    });
+
+    // Fisherman Click - Throw Bait Animation
+    fisherman.userData.isFishing = false;
+    fisherman.userData.lineLength = 1;
+
+    window.addEventListener("click", (event) => {
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObject(fisherman);
+
+        if (intersects.length > 0 && !fisherman.userData.isFishing) {
+            fisherman.userData.isFishing = true;
+            gsap.to(bait.position, {
+                y: -5,
+                duration: 2,
+                ease: "power2.out",
+                onUpdate: () => {
+                    fishingLine.geometry.setFromPoints([
+                        new THREE.Vector3(0, 2.5, 0),
+                        new THREE.Vector3(0, bait.position.y, 0)
+                    ]);
+                }
+            });
+        }
+    });
+
+    // Animate Scene
+    function animate() {
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // Resize Handling
+    window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+</script>
+
+</body>
+</html>
