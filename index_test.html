@@ -1,64 +1,579 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="earth.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Explore our environments</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary-color: #0a1128;
+            --secondary-color: #0f2149;
+            --accent-color: #1b3a6b;
+            --highlight-color: #ffffff;
+            --text-color: #f0f0f0;
+            --glow-color: rgba(66, 220, 255, 0.8);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            display: flex;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-    <div class="circle">
-    <div class="wave"></div>
+        /* Star background */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: #fff;
+            border-radius: 50%;
+            animation: twinkle linear infinite;
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        /* Shooting stars */
+        .shooting-star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 50%, rgba(255,255,255,0) 100%);
+            animation: shooting linear infinite;
+            transform: rotate(45deg);
+        }
+        
+        @keyframes shooting {
+            0% {
+                transform: translateX(0) translateY(0) rotate(45deg);
+                opacity: 1;
+                width: 0;
+            }
+            30% {
+                width: 100px;
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(1000px) translateY(-1000px) rotate(45deg);
+                opacity: 0;
+                width: 0;
+            }
+        }
+        
+        /* Ocean waves */
+        .ocean {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 20vh;
+            background: linear-gradient(to bottom, 
+                rgba(10, 40, 95, 0) 0%, 
+                rgba(22, 80, 167, 0.2) 50%,
+                rgba(10, 40, 95, 0.4) 100%);
+            z-index: -1;
+        }
+        
+        .wave {
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            animation: wave linear infinite;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%231668bf' fill-opacity='0.3' d='M0,192L60,186.7C120,181,240,171,360,154.7C480,139,600,117,720,122.7C840,128,960,160,1080,154.7C1200,149,1320,107,1380,85.3L1440,64L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z'%3E%3C/path%3E%3C/svg%3E") repeat-x;
+            background-size: 100% 100%;
+            bottom: 0;
+        }
+        
+        .wave:nth-child(1) {
+            opacity: 0.5;
+            animation-duration: 20s;
+        }
+        
+        .wave:nth-child(2) {
+            opacity: 0.3;
+            animation-duration: 15s;
+            bottom: -5px;
+            animation-delay: -5s;
+        }
+        
+        .wave:nth-child(3) {
+            opacity: 0.2;
+            animation-duration: 30s;
+            bottom: -10px;
+            animation-delay: -10s;
+        }
+        
+        @keyframes wave {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background-color: var(--secondary-color);
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding-top: 80px;
+            z-index: 100;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar.closed {
+            transform: translateX(-100%);
+        }
+
+        .menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+        }
+
+        .menu li {
+            padding: 0;
+            margin-bottom: 5px;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: var(--text-color);
+            display: block;
+            font-size: 16px;
+            padding: 12px 25px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            opacity: 0.8;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+        
+        .menu a:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 0;
+            height: 2px;
+            background: var(--glow-color);
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px var(--glow-color);
+        }
+        
+        .menu a:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            opacity: 1;
+            transform: translateX(5px);
+        }
+        
+        .menu a:hover:before {
+            width: 100%;
+        }
+
+        .toggle-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(20, 30, 48, 0.8);
+            border: none;
+            color: var(--text-color);
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 1000;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(66, 220, 255, 0.3);
+            backdrop-filter: blur(4px);
+        }
+        
+        .toggle-btn:hover {
+            background: var(--secondary-color);
+            transform: rotate(90deg);
+            box-shadow: 0 0 20px var(--glow-color);
+        }
+
+        .content {
+            margin-left: 280px;
+            margin-top: 20px;
+            padding: 30px;
+            width: calc(100% - 250px);
+            transition: margin-left 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55), width 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .sidebar.closed ~ .content {
+            margin-left: 20px;
+            width: calc(100% - 20px);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--text-color);
+            position: relative;
+            padding-bottom: 15px;
+            text-shadow: 0 0 10px rgba(66, 220, 255, 0.5);
+        }
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: var(--glow-color);
+            box-shadow: 0 0 10px var(--glow-color);
+        }
+        
+        p {
+            line-height: 1.7;
+            margin-bottom: 15px;
+            opacity: 0.9;
+            font-weight: 400;
+            max-width: 700px;
+        }
+        
+        /* Menu styles */
+        .menu-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            margin-top: 40px;
+            position: relative;
+        }
+        
+        .section-menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            height: 450px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+        
+        .menu-item {
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.4s ease, filter 0.4s ease;
+        }
+        
+        .menu-item::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            transition: transform 1s ease, filter 0.5s ease;
+            z-index: -1;
+        }
+        
+        .section-menu:hover .menu-item:not(:hover) {
+            filter: brightness(0.5) blur(2px);
+        }
+        
+        .menu-item:hover::before {
+            transform: scale(1.1);
+            filter: brightness(1.1) contrast(1.1);
+        }
+        
+        .planets::before {
+            background-image: url('https://static.nationalgeographic.fr/files/styles/image_3200/public/planeta-neptun-sita-ap-.webp?w=973&h=548');
+        }
+        
+        .ocean::before {
+            background-image: url('https://www.areion24.news/wp-content/uploads/2019/01/shutterstock_94370293-990x556.jpg');
+        }
+        
+        .coming-soon::before {
+            background-image: url('https://source.unsplash.com/random/1200x800/?future,cosmos');
+        }
+        
+        .menu-item a {
+            display: block;
+            width: 100%;
+            height: 100%;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+        
+        .menu-item-content {
+            background-color: rgba(15, 23, 42, 0.75);
+            padding: 25px 40px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: translateY(20px);
+            opacity: 0;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 30px rgba(66, 220, 255, 0.2);
+        }
+        
+        .menu-item:hover .menu-item-content {
+            transform: translateY(0);
+            opacity: 1;
+            box-shadow: 0 0 30px rgba(66, 220, 255, 0.4);
+        }
+        
+        .menu-item h2 {
+            margin: 0;
+            color: white;
+            font-size: 28px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            position: relative;
+            padding-bottom: 10px;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(66, 220, 255, 0.5);
+        }
+        
+        .menu-item h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 3px;
+            background: var(--glow-color);
+            box-shadow: 0 0 10px var(--glow-color);
+        }
+        
+        .menu-item-icon {
+            margin-bottom: 15px;
+            font-size: 24px;
+            color: var(--glow-color);
+            text-shadow: 0 0 10px var(--glow-color);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease forwards;
+            opacity: 0;
+        }
+        
+        h1.fade-in { animation-delay: 0.1s; }
+        p.fade-in:nth-of-type(1) { animation-delay: 0.2s; }
+        p.fade-in:nth-of-type(2) { animation-delay: 0.3s; }
+        .menu-container.fade-in { animation-delay: 0.5s; }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .menu-item-content {
+            animation: float 5s ease-in-out infinite;
+        }
+        
+        .menu-item:nth-child(2) .menu-item-content {
+            animation-delay: 1s;
+        }
+        
+        .menu-item:nth-child(3) .menu-item-content {
+            animation-delay: 2s;
+        }
+    </style>
+</head>
+<body>
+    <!-- Star background -->
+    <div class="stars" id="stars"></div>
+    
+    <!-- Ocean waves -->
+    <div class="ocean">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
     </div>
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Shantell+Sans:wght@300;400;500;600;800&display=swap');
+    
+    <div class="sidebar" id="sidebar">
+        <ul class="menu">
+            <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="planets.html"><i class="fas fa-globe"></i> Explore the planets</a></li>
+            <li><a href="ocean.html"><i class="fas fa-water"></i> Explore the ocean</a></li>
+            <li><a href="#"><i class="fas fa-rocket"></i> Coming Soon</a></li>
+        </ul>
+    </div>
 
-*, *:before, *:after{
-  margin:0;
-  padding: 0;
-  box-sizing:border-box;
-}
-.circle{
-  position: relative;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 250px;
-  height: 250px;
-  border: 5px solid #FFFFFF;
-  box-shadow: 0 0 0 5px #4973ff;
-  border-radius: 50%;
-  overflow: hidden;
-}
-.wave{
-  position: fixed;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background: #2C74B3;
-  border-radius: 50%;
-  box-shadow: inset 0 0 50px 0 rgba(0, 0, 0, 0.5);
-}
-.wave:before,
-.wave:after{
-  content:'';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 200%;
-  height: 200%;
-  background: black;
-  transform: translate(-50%, -75%);
-}
-.wave:before{
-  border-radius: 45%;
-  background: rgba(255, 255, 255, 1);
-  animation: animate 5s linear infinite;
-}
-.wave:after{
-  border-radius: 40%;
-  background: rgba(255, 255, 255, 0.5);
-  animation: animate 10s linear infinite;
-}
+    <button class="toggle-btn" id="toggleBtn" onclick="toggleMenu()">☰</button>
 
-@keyframes animate{
-  0%{
-    transform: translate(-50%, -75%) rotate(0deg);
-  }
-  100%{
-    transform: translate(-50%, -75%) rotate(360deg);
-  }
-}
-</style>
+    <div class="content">
+        <h1 class="fade-in">Explore our environments</h1>
+        <p class="fade-in">This website is for educational and experimental content, nothing serious.</p>
+        <p class="fade-in">The goal is to learn and discover various 3D environments.</p>
+        
+        <!-- Central menu -->
+        <div class="menu-container fade-in">
+            <div class="section-menu">
+                <div class="menu-item planets">
+                    <a href="planets.html">
+                        <div class="menu-item-content">
+                            <div class="menu-item-icon"><i class="fas fa-globe"></i></div>
+                            <h2>Planets</h2>
+                        </div>
+                    </a>
+                </div>
+                <div class="menu-item ocean">
+                    <a href="ocean.html">
+                        <div class="menu-item-content">
+                            <div class="menu-item-icon"><i class="fas fa-water"></i></div>
+                            <h2>Ocean</h2>
+                        </div>
+                    </a>
+                </div>
+                <div class="menu-item coming-soon">
+                    <a href="#">
+                        <div class="menu-item-content">
+                            <div class="menu-item-icon"><i class="fas fa-rocket"></i></div>
+                            <h2>Coming Soon</h2>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('closed');
+        }
+        
+        // Create stars
+        document.addEventListener("DOMContentLoaded", function() {
+            const starsContainer = document.getElementById('stars');
+            const starsCount = 200;
+            
+            // Create regular stars
+            for (let i = 0; i < starsCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                // Random properties
+                const size = Math.random() * 3;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const duration = 3 + Math.random() * 7;
+                const delay = Math.random() * 5;
+                
+                // Apply styles
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.left = `${posX}%`;
+                star.style.top = `${posY}%`;
+                star.style.animationDuration = `${duration}s`;
+                star.style.animationDelay = `${delay}s`;
+                
+                // Random colors for some stars (blue tint for some)
+                if (Math.random() > 0.8) {
+                    star.style.backgroundColor = '#8aaeff';
+                } else if (Math.random() > 0.9) {
+                    star.style.backgroundColor = '#42dcff';
+                }
+                
+                // Add to container
+                starsContainer.appendChild(star);
+            }
+            
+            // Create shooting stars
+            function createShootingStar() {
+                const shootingStar = document.createElement('div');
+                shootingStar.className = 'shooting-star';
+                
+                // Random properties
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const duration = 2 + Math.random() * 4;
+                
+                // Apply styles
+                shootingStar.style.left = `${posX}%`;
+                shootingStar.style.top = `${posY}%`;
+                shootingStar.style.animationDuration = `${duration}s`;
+                
+                // Add to container
+                starsContainer.appendChild(shootingStar);
+                
+                // Remove after animation completes
+                setTimeout(() => {
+                    shootingStar.remove();
+                }, duration * 1000);
+            }
+            
+            // Create shooting stars periodically
+            setInterval(createShootingStar, 5000);
+            
+            // Add entrance animations to elements once DOM is loaded
+            const allFadeElements = document.querySelectorAll('.fade-in');
+            allFadeElements.forEach(element => {
+                element.style.opacity = "0";
+            });
+            
+            setTimeout(() => {
+                allFadeElements.forEach(element => {
+                    element.style.opacity = ""; // Let the CSS animation take over
+                });
+            }, 100);
+        });
+    </script>
+</body>
+</html>
