@@ -580,6 +580,66 @@
                 });
             }, 100);
         });
+
+        // Page Transition Function
+        function addPageTransitionEffects() {
+            // Create a transition overlay
+            const transitionOverlay = document.createElement('div');
+            transitionOverlay.style.position = 'fixed';
+            transitionOverlay.style.top = '0';
+            transitionOverlay.style.left = '0';
+            transitionOverlay.style.width = '100%';
+            transitionOverlay.style.height = '100%';
+            transitionOverlay.style.backgroundColor = 'var(--primary-color)';
+            transitionOverlay.style.zIndex = '9999';
+            transitionOverlay.style.opacity = '0';
+            transitionOverlay.style.pointerEvents = 'none';
+            transitionOverlay.style.transition = 'opacity 0.5s ease';
+            document.body.appendChild(transitionOverlay);
+
+            // Add transition to all links
+            const links = document.querySelectorAll('a');
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // Prevent default link behavior
+                    e.preventDefault();
+                    
+                    // Get the target href
+                    const href = this.getAttribute('href');
+                    
+                    // Fade out current page
+                    transitionOverlay.style.opacity = '1';
+                    
+                    // Navigate after transition
+                    setTimeout(() => {
+                        window.location.href = href;
+                    }, 500);
+                });
+            });
+
+            // Handle page load and exit transitions
+            window.addEventListener('pageshow', function(event) {
+                transitionOverlay.style.opacity = '0';
+                
+                // Allow interactions after transition completes
+                setTimeout(() => {
+                    transitionOverlay.style.pointerEvents = 'none';
+                }, 500);
+            });
+        }
+
+        // Add page transition effects after DOM is fully loaded
+        document.addEventListener("DOMContentLoaded", function() {
+            // Existing star and fade-in code remains the same
+            const starsContainer = document.getElementById('stars');
+            const starsCount = 200;
+            
+            // ... [existing star generation code] ...
+
+            // Add page transition effects
+            addPageTransitionEffects();
+        });
+        
     </script>
 </body>
 </html>
