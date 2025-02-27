@@ -16,7 +16,7 @@
             --highlight-color: #ffffff;
             --text-color: #f0f0f0;
             --glow-color: rgba(66, 220, 255, 0.8);
-            --wave-color: #3b5a9c;
+            --wave-color: #0c3b69;
         }
         
         * {
@@ -113,11 +113,114 @@
             width: 100%;
             height: 30vh;
             background: linear-gradient(to bottom, 
-                rgba(10, 40, 95, 0.281) 0%, 
-                rgba(22, 80, 167, 0.342) 50%,
-                rgba(10, 40, 95, 0.801) 100%);
+                rgba(10, 40, 95, 0) 0%, 
+                rgba(22, 80, 167, 0.2) 50%,
+                rgba(10, 40, 95, 0.3) 100%);
             z-index: -2;
             pointer-events: none;
+        }
+        
+        /* Floating Bubbles */
+        .bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            bottom: 0;
+            animation: bubble-rise var(--duration, 8s) ease-in forwards;
+            z-index: -1;
+        }
+
+        @keyframes bubble-rise {
+            0% {
+                transform: translateY(0) translateX(0);
+                opacity: 0.7;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(var(--drift, 20px));
+                opacity: 0;
+            }
+        }
+
+        /* Wave sparkles - light reflections on wave peaks */
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            bottom: 20vh;
+            animation: sparkle var(--duration, 2s) ease-in-out forwards;
+            z-index: -1;
+        }
+
+        @keyframes sparkle {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* Comet - special shooting star with head */
+        .comet {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: linear-gradient(to right, 
+                rgba(255, 255, 255, 0) 0%, 
+                rgba(255, 255, 255, 1) 30%, 
+                rgba(70, 190, 255, 0.8) 60%, 
+                rgba(70, 130, 255, 0.4) 100%);
+            box-shadow: 0 0 5px rgba(70, 190, 255, 0.8);
+            animation: comet var(--duration, 4s) linear forwards;
+            transform: rotate(45deg);
+            z-index: -2;
+        }
+
+        @keyframes comet {
+            0% {
+                transform: translateX(0) translateY(0) rotate(45deg);
+                opacity: 1;
+                width: 0;
+            }
+            20% {
+                width: 200px;
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(1500px) translateY(-1500px) rotate(45deg);
+                opacity: 0;
+                width: 0;
+            }
+        }
+
+        /* Floating Nebula */
+        .nebula {
+            position: fixed;
+            border-radius: 50%;
+            background: radial-gradient(
+                circle,
+                rgba(70, 140, 255, 0.1) 0%,
+                rgba(90, 120, 225, 0.05) 40%,
+                transparent 80%
+            );
+            animation: nebula-fade var(--duration, 20s) ease-in-out infinite;
+            z-index: -3;
+        }
+
+        @keyframes nebula-fade {
+            0%, 100% { opacity: 0.1; }
+            50% { opacity: 0.2; }
         }
         
         .sidebar {
@@ -425,7 +528,6 @@
             color: #fff;
             padding-top: 5px;
         }
-
     </style>
 </head>
 <body>
@@ -438,7 +540,7 @@
     <!-- Interactive Wave Container -->
     <div id="wave-container">
         <svg id="wave-svg" preserveAspectRatio="none" viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg">
-            <path id="wave-path" fill="var(--wave-color)" fill-opacity="0.7"></path>
+            <path id="wave-path" fill="var(--wave-color)" fill-opacity="0.9"></path>
         </svg>
     </div>
     
@@ -496,83 +598,142 @@
             sidebar.classList.toggle('closed');
         }
         
-        document.addEventListener("DOMContentLoaded", function() {
-            const starsContainer = document.getElementById('stars');
-            const starsCount = 200;
+        // Create and animate random elements
+        function addRandomElements() {
+            // Create bubbles container if it doesn't exist
+            let bubblesContainer = document.getElementById('bubbles-container');
+            if (!bubblesContainer) {
+                bubblesContainer = document.createElement('div');
+                bubblesContainer.id = 'bubbles-container';
+                bubblesContainer.style.position = 'fixed';
+                bubblesContainer.style.bottom = '0';
+                bubblesContainer.style.left = '0';
+                bubblesContainer.style.width = '100%';
+                bubblesContainer.style.height = '100%';
+                bubblesContainer.style.pointerEvents = 'none';
+                bubblesContainer.style.zIndex = '-1';
+                document.body.appendChild(bubblesContainer);
+            }
             
-            // Create regular stars
-            for (let i = 0; i < starsCount; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                
-                // Random properties
-                const size = Math.random() * 3;
-                const posX = Math.random() * 100;
-                const posY = Math.random() * 100;
-                const duration = 3 + Math.random() * 7;
-                const delay = Math.random() * 5;
-                
-                // Apply styles
-                star.style.width = `${size}px`;
-                star.style.height = `${size}px`;
-                star.style.left = `${posX}%`;
-                star.style.top = `${posY}%`;
-                star.style.animationDuration = `${duration}s`;
-                star.style.animationDelay = `${delay}s`;
-                
-                // Random colors for some stars (blue tint for some)
-                if (Math.random() > 0.8) {
-                    star.style.backgroundColor = '#8aaeff';
-                } else if (Math.random() > 0.9) {
-                    star.style.backgroundColor = '#42dcff';
+            // Create floating bubbles periodically
+            function createBubbles() {
+                if (Math.random() > 0.7) { // Only create bubbles 30% of the time
+                    const bubble = document.createElement('div');
+                    bubble.className = 'bubble';
+                    
+                    // Random properties
+                    const size = 3 + Math.random() * 8;
+                    const left = Math.random() * 100;
+                    const duration = 6 + Math.random() * 6;
+                    const drift = (Math.random() - 0.5) * 40;
+                    
+                    bubble.style.width = `${size}px`;
+                    bubble.style.height = `${size}px`;
+                    bubble.style.left = `${left}%`;
+                    bubble.style.setProperty('--duration', `${duration}s`);
+                    bubble.style.setProperty('--drift', `${drift}px`);
+                    
+                    bubblesContainer.appendChild(bubble);
+                    
+                    // Remove bubble after animation completes
+                    setTimeout(() => {
+                        bubble.remove();
+                    }, duration * 1000);
                 }
                 
-                // Add to container
-                starsContainer.appendChild(star);
+                // Schedule next bubble
+                setTimeout(createBubbles, 300 + Math.random() * 800);
             }
             
-            // Create shooting stars
-            function createShootingStar() {
-                const shootingStar = document.createElement('div');
-                shootingStar.className = 'shooting-star';
+            // Create wave sparkles periodically
+            function createSparkles() {
+                if (Math.random() > 0.6) { // Only create sparkles 40% of the time
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'sparkle';
+                    
+                    // Get the current wave path for positioning sparkles along the wave
+                    const wavePath = document.getElementById('wave-path');
+                    if (wavePath) {
+                        // Random properties
+                        const left = 10 + Math.random() * 80; // Keep away from edges
+                        const yOffset = Math.random() * 5; // Small vertical variation
+                        const duration = 1 + Math.random();
+                        
+                        sparkle.style.left = `${left}%`;
+                        sparkle.style.bottom = `calc(20vh + ${yOffset}px)`;
+                        sparkle.style.setProperty('--duration', `${duration}s`);
+                        
+                        bubblesContainer.appendChild(sparkle);
+                        
+                        // Remove sparkle after animation completes
+                        setTimeout(() => {
+                            sparkle.remove();
+                        }, duration * 1000);
+                    }
+                }
                 
-                // Random properties
-                const posX = Math.random() * 100;
-                const posY = Math.random() * 100;
-                const duration = 2 + Math.random() * 4;
-                
-                // Apply styles
-                shootingStar.style.left = `${posX}%`;
-                shootingStar.style.top = `${posY}%`;
-                shootingStar.style.animationDuration = `${duration}s`;
-                
-                // Add to container
-                starsContainer.appendChild(shootingStar);
-                
-                // Remove after animation completes
-                setTimeout(() => {
-                    shootingStar.remove();
-                }, duration * 1000);
+                // Schedule next sparkle
+                setTimeout(createSparkles, 200 + Math.random() * 500);
             }
             
-            // Create shooting stars periodically
-            setInterval(createShootingStar, 5000);
+            // Create comets occasionally
+            function createComet() {
+                if (Math.random() > 0.7) { // Rare chance of comet
+                    const comet = document.createElement('div');
+                    comet.className = 'comet';
+                    
+                    // Random properties
+                    const posX = Math.random() * 30; // Start from left side
+                    const posY = 10 + Math.random() * 50; // Upper part of screen
+                    const duration = 3 + Math.random() * 2;
+                    
+                    comet.style.left = `${posX}%`;
+                    comet.style.top = `${posY}%`;
+                    comet.style.setProperty('--duration', `${duration}s`);
+                    
+                    bubblesContainer.appendChild(comet);
+                    
+                    // Remove comet after animation completes
+                    setTimeout(() => {
+                        comet.remove();
+                    }, duration * 1000);
+                }
+                
+                // Schedule next comet check - much less frequent
+                setTimeout(createComet, 10000 + Math.random() * 15000);
+            }
             
-            // Add entrance animations to elements once DOM is loaded
-            const allFadeElements = document.querySelectorAll('.fade-in');
-            allFadeElements.forEach(element => {
-                element.style.opacity = "0";
-            });
+            // Create subtle nebulae
+            function createNebulae() {
+                // Create 2-3 nebulae only
+                const nebulaCount = 2 + Math.floor(Math.random());
+                
+                for (let i = 0; i < nebulaCount; i++) {
+                    const nebula = document.createElement('div');
+                    nebula.className = 'nebula';
+                    
+                    // Random properties
+                    const size = 100 + Math.random() * 200;
+                    const posX = Math.random() * 100;
+                    const posY = Math.random() * 60; // Upper part of screen
+                    const duration = 15 + Math.random() * 10;
+                    
+                    nebula.style.width = `${size}px`;
+                    nebula.style.height = `${size}px`;
+                    nebula.style.left = `${posX}%`;
+                    nebula.style.top = `${posY}%`;
+                    nebula.style.setProperty('--duration', `${duration}s`);
+                    
+                    bubblesContainer.appendChild(nebula);
+                }
+            }
             
-            setTimeout(() => {
-                allFadeElements.forEach(element => {
-                    element.style.opacity = ""; // Let the CSS animation take over
-                });
-            }, 100);
-            
-            // Initialize the interactive waves
-            initWaves();
-        });
+            // Start all animations
+            createBubbles();
+            createSparkles();
+            createComet();
+            createNebulae();
+        }
         
         // Wave Generator Class from waves.html
         class WaveGenerator {
@@ -681,6 +842,87 @@
             const wavePath = document.getElementById('wave-svg').querySelector('path');
             const waveGenerator = new WaveGenerator(wavePath);
         }
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            const starsContainer = document.getElementById('stars');
+            const starsCount = 200;
+            
+            // Create regular stars
+            for (let i = 0; i < starsCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                // Random properties
+                const size = Math.random() * 3;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const duration = 3 + Math.random() * 7;
+                const delay = Math.random() * 5;
+                
+                // Apply styles
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.left = `${posX}%`;
+                star.style.top = `${posY}%`;
+                star.style.animationDuration = `${duration}s`;
+                star.style.animationDelay = `${delay}s`;
+                
+                // Random colors for some stars (blue tint for some)
+                if (Math.random() > 0.8) {
+                    star.style.backgroundColor = '#8aaeff';
+                } else if (Math.random() > 0.9) {
+                    star.style.backgroundColor = '#42dcff';
+                }
+                
+                // Add to container
+                starsContainer.appendChild(star);
+            }
+            
+            // Create shooting stars
+            function createShootingStar() {
+                const shootingStar = document.createElement('div');
+                shootingStar.className = 'shooting-star';
+                
+                // Random properties
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const duration = 2 + Math.random() * 4;
+                
+                // Apply styles
+                shootingStar.style.left = `${posX}%`;
+                shootingStar.style.top = `${posY}%`;
+                shootingStar.style.animationDuration = `${duration}s`;
+                
+                // Add to container
+                starsContainer.appendChild(shootingStar);
+                
+                // Remove after animation completes
+                setTimeout(() => {
+                    shootingStar.remove();
+                }, duration * 1000);
+            }
+            
+            // Create shooting stars periodically
+            setInterval(createShootingStar, 5000);
+            
+            // Add entrance animations to elements once DOM is loaded
+            const allFadeElements = document.querySelectorAll('.fade-in');
+            allFadeElements.forEach(element => {
+                element.style.opacity = "0";
+            });
+            
+            setTimeout(() => {
+                allFadeElements.forEach(element => {
+                    element.style.opacity = ""; // Let the CSS animation take over
+                });
+            }, 100);
+            
+            // Initialize the interactive waves
+            initWaves();
+            
+            // Add the random elements
+            addRandomElements();
+        });
 
         // Page Transition Function
         function addPageTransitionEffects() {
