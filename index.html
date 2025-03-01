@@ -530,6 +530,35 @@
             color: #fff;
             padding-top: 5px;
         }
+
+        #audio-controls {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+        background-color: rgba(15, 23, 42, 0.75);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 0 15px rgba(66, 220, 255, 0.3);
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    #audio-controls:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 20px rgba(66, 220, 255, 0.5);
+    }
+
+    #audio-controls i {
+        color: var(--text-color);
+        font-size: 18px;
+    }
     </style>
 </head>
 <body>
@@ -979,5 +1008,52 @@
             addPageTransitionEffects();
         });
     </script>
+
+    <!-- Audio elements -->
+<audio id="ambient-sound" loop preload="auto">
+    <source src="audio.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+
+<div id="audio-controls" onclick="toggleAudio()">
+    <i class="fas fa-volume-mute" id="audio-icon"></i>
+</div>
+
+<script>
+    // Audio management
+    let audioPlaying = false;
+    const ambientSound = document.getElementById('ambient-sound');
+    const audioIcon = document.getElementById('audio-icon');
+    
+    // Set initial volume very low for subtle background effect
+    ambientSound.volume = 0.2;
+    
+    function toggleAudio() {
+        if (audioPlaying) {
+            ambientSound.pause();
+            audioIcon.className = 'fas fa-volume-mute';
+        } else {
+            // Play audio with a fade-in effect
+            ambientSound.play();
+            fadeAudioIn();
+            audioIcon.className = 'fas fa-volume-up';
+        }
+        audioPlaying = !audioPlaying;
+    }
+    
+    function fadeAudioIn() {
+        // Start with very low volume
+        ambientSound.volume = 0.01;
+        
+        // Gradually increase volume
+        let fadeInterval = setInterval(() => {
+            if (ambientSound.volume < 0.2) {
+                ambientSound.volume += 0.01;
+            } else {
+                clearInterval(fadeInterval);
+            }
+        }, 100);
+    }
+</script>
 </body>
 </html>
