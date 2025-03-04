@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MultiMarket - Marketplace pour professionnels</title>
+    <style>
+        /* Reset et styles de base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            color: #fff;
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Arrière-plan dynamique avec dégradé */
+        .dynamic-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(-45deg, #23a6d5, #23d5ab, #23a6d5, #5643cc, #6a3fc8);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            z-index: -2;
+        }
+        
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+            position: relative;
+        }
+        
+        /* Header */
+        header {
+            background-color: rgba(5, 25, 55, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 15px 0;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            width: 100%;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo img {
+            height: 50px;
+            width: auto;
+            margin-right: 10px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 25px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #e0e6ff;
+            font-weight: 500;
+        }
+        
+        .nav-links a:hover {
+            color: #4d8aff;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #4d8aff;
+            color: #4d8aff;
+        }
+        
+        .btn-primary {
+            background-color: #4d8aff;
+            color: #fff;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background-color: #071a36;
+            padding: 150px 0 80px;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 42px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        
+        .hero p {
+            font-size: 18px;
+            color: #c8d8ff;
+            max-width: 700px;
+            margin: 0 auto 30px;
+        }
+        
+        .search-bar {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .search-bar input {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+        }
+        
+        .search-bar button {
+            padding: 15px 25px;
+            background-color: #4d8aff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        /* Particules animées pour l'arrière-plan */
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        
+        /* Circuit board lines comme sur l'image du logo */
+        .circuit-lines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                              radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+            z-index: -1;
+            opacity: 0.2;
+        }
+        
+        /* Categories Section */
+        .categories {
+            padding: 80px 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .section-title h2 {
+            font-size: 32px;
+            color: #fff;
+            margin-bottom: 15px;
+        }
+        
+        .section-title p {
+            color: #c8d8ff;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+        
+        .category-card {
+            background-color: #0c2c56;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .category-image {
+            height: 180px;
+            background-color: #071a36;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .category-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .category-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .category-content {
+            padding: 20px;
+        }
+        
+        .category-content h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        
+        .category-content p {
+            color: #c8d8ff;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .category-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .stores-count {
+            color: #4d8aff;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .explore-btn {
+            background-color: #0a1f44;
+            color: #e0e6ff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 80px 0;
+            background-color: #071a36;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .feature-item {
+            background-color: #0c2c56;
+            border-radius: 8px;
+            padding: 30px;
+            transition: transform 0.3s;
+        }
+        
+        .feature-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 36px;
+            color: #4d8aff;
+            margin-bottom: 20px;
+        }
+        
+        .feature-item h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        
+        .feature-item p {
+            color: #c8d8ff;
+            font-size: 15px;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            padding: 80px 0;
+            text-align: center;
+        }
+        
+        .cta-content {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .cta-content h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        
+        .cta-content p {
+            color: #c8d8ff;
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #051937;
+            padding: 60px 0 30px;
+        }
+        
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-about h3 {
+            font-size: 22px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        
+        .footer-about p {
+            color: #c8d8ff;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .social-icon {
+            width: 36px;
+            height: 36px;
+            background-color: #0a1f44;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e0e6ff;
+        }
+        
+        .footer-links h4 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        
+        .footer-links ul {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            color: #c8d8ff;
+            text-decoration: none;
+        }
+        
+        .footer-links a:hover {
+            color: #4d8aff;
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid #0a1f44;
+            padding-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .copyright {
+            color: #c8d8ff;
+            font-size: 14px;
+        }
+        
+        .footer-extra {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .footer-extra a {
+            color: #c8d8ff;
+            font-size: 14px;
+            text-decoration: none;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-bottom {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .hero h1 {
+                font-size: 32px;
+            }
+            
+            .section-title h2 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <img src="logo.jpg" alt="MultiMarket Logo">
+                <span>MultiMarket</span>
+            </div>
+            <nav class="nav-links">
+                <a href="#">Accueil</a>
+                <a href="#">Catégories</a>
+                <a href="#">Fonctionnalités</a>
+                <a href="#">À propos</a>
+                <a href="#">Contact</a>
+            </nav>
+            <div class="header-actions">
+                <button class="btn btn-outline">Se connecter</button>
+                <button class="btn btn-primary">S'inscrire</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Arrière-plan dynamique -->
+    <div class="dynamic-bg"></div>
+    
+    <!-- Particules animées pour l'effet dynamique -->
+    <div id="particles-js"></div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>L'univers des professionnels</h1>
+            <p>Découvrez une marketplace unique où chaque boutique exprime sa propre identité</p>
+            <div class="search-bar">
+                <input type="text" placeholder="Rechercher une boutique ou un service...">
+                <button>Explorer</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="categories">
+        <div class="container">
+            <div class="section-title">
+                <h2>Explorez par univers</h2>
+                <p>Chaque catégorie propose une expérience unique adaptée à son secteur</p>
+            </div>
+            <div class="categories-grid">
+                <!-- Catégorie Coiffure -->
+                <div class="category-card">
+                    <div class="category-image">
+                        <img src="/api/placeholder/400/250" alt="Univers Coiffure">
+                    </div>
+                    <div class="category-content">
+                        <div class="category-icon">✂️</div>
+                        <h3>Coiffure</h3>
+                        <p>Un espace dédié aux artistes de la coiffure et leurs créations</p>
+                        <div class="category-meta">
+                            <div class="stores-count">28 boutiques</div>
+                            <div class="explore-btn">Explorer</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Catégorie Automobile -->
+                <div class="category-card">
+                    <div class="category-image">
+                        <img src="/api/placeholder/400/250" alt="Univers Automobile">
+                    </div>
+                    <div class="category-content">
+                        <div class="category-icon">🚗</div>
+                        <h3>Automobile</h3>
+                        <p>Tout l'univers de l'automobile avec des experts passionnés</p>
+                        <div class="category-meta">
+                            <div class="stores-count">35 boutiques</div>
+                            <div class="explore-btn">Explorer</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Catégorie Pâtisserie -->
+                <div class="category-card">
+                    <div class="category-image">
+                        <img src="/api/placeholder/400/250" alt="Univers Pâtisserie">
+                    </div>
+                    <div class="category-content">
+                        <div class="category-icon">🍰</div>
+                        <h3>Pâtisserie</h3>
+                        <p>Découvrez les créations des meilleurs artisans pâtissiers</p>
+                        <div class="category-meta">
+                            <div class="stores-count">42 boutiques</div>
+                            <div class="explore-btn">Explorer</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Catégorie Artisanat -->
+                <div class="category-card">
+                    <div class="category-image">
+                        <img src="/api/placeholder/400/250" alt="Univers Artisanat">
+                    </div>
+                    <div class="category-content">
+                        <div class="category-icon">🔨</div>
+                        <h3>Artisanat</h3>
+                        <p>Un écosystème dédié aux artisans et leur savoir-faire unique</p>
+                        <div class="category-meta">
+                            <div class="stores-count">31 boutiques</div>
+                            <div class="explore-btn">Explorer</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Catégorie Mode -->
+                <div class="category-card">
+                    <div class="category-image">
+                        <img src="/api/placeholder/400/250" alt="Univers Mode">
+                    </div>
+                    <div class="category-content">
+                        <div class="category-icon">👗</div>
+                        <h3>Mode</h3>
+                        <p>La créativité des stylistes et designers à portée de clic</p>
+                        <div class="category-meta">
+                            <div class="stores-count">56 boutiques</div>
+                            <div class="explore-btn">Explorer</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Catégorie Bien-être -->
+                <div class="category-card">
+                    <div class="category-image">
+                        <img src="/api/placeholder/400/250" alt="Univers Bien-être">
+                    </div>
+                    <div class="category-content">
+                        <div class="category-icon">💆</div>
+                        <h3>Bien-être</h3>
+                        <p>Des professionnels dédiés à votre santé et votre équilibre</p>
+                        <div class="category-meta">
+                            <div class="stores-count">23 boutiques</div>
+                            <div class="explore-btn">Explorer</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>Une expérience unique</h2>
+                <p>Des fonctionnalités innovantes pour une navigation immersive</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">⭐</div>
+                    <h3>Personnalisation avancée</h3>
+                    <p>Chaque boutique bénéficie d'une identité visuelle forte et adaptée à son secteur d'activité.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Navigation intuitive</h3>
+                    <p>Une interface fluide qui permet aux visiteurs de s'immerger dans l'univers de chaque professionnel.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Expérience interactive</h3>
+                    <p>Des fonctionnalités engageantes qui captent l'attention et favorisent la conversion.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Créez votre univers professionnel</h2>
+                <p>Rejoignez notre marketplace innovante et développez votre présence en ligne avec une boutique qui vous ressemble.</p>
+                <div class="cta-buttons">
+                    <button class="btn btn-primary">Créer ma boutique</button>
+                    <button class="btn btn-outline">En savoir plus</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-about">
+                    <h3>MultiMarket</h3>
+                    <p>Une plateforme innovante qui réinvente la façon dont les professionnels présentent leurs produits et services en ligne, avec une approche centrée sur l'identité et l'expérience utilisateur.</p>
+                    <div class="social-links">
+                        <div class="social-icon">f</div>
+                        <div class="social-icon">t</div>
+                        <div class="social-icon">in</div>
+                        <div class="social-icon">ig</div>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="#">Accueil</a></li>
+                        <li><a href="#">Catégories</a></li>
+                        <li><a href="#">Fonctionnalités</a></li>
+                        <li><a href="#">Témoignages</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Professionnels</h4>
+                    <ul>
+                        <li><a href="#">Créer une boutique</a></li>
+                        <li><a href="#">Ressources</a></li>
+                        <li><a href="#">Tarification</a></li>
+                        <li><a href="#">FAQ vendeurs</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">Aide</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Mentions légales</a></li>
+                        <li><a href="#">Confidentialité</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="copyright">© 2025 MultiMarket. Tous droits réservés.</div>
+                <div class="footer-extra">
+                    <a href="#">Conditions d'utilisation</a>
+                    <a href="#">Politique de confidentialité</a>
+                    <a href="#">Cookies</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Circuit board lines pour l'effet du logo -->
+    <div class="circuit-lines"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configuration pour particles.js
+            particlesJS('particles-js', {
+                "particles": {
+                    "number": {
+                        "value": 80,
+                        "density": {
+                            "enable": true,
+                            "value_area": 800
+                        }
+                    },
+                    "color": {
+                        "value": "#ffffff"
+                    },
+                    "shape": {
+                        "type": "circle",
+                        "stroke": {
+                            "width": 0,
+                            "color": "#000000"
+                        },
+                        "polygon": {
+                            "nb_sides": 5
+                        }
+                    },
+                    "opacity": {
+                        "value": 0.5,
+                        "random": false,
+                        "anim": {
+                            "enable": false,
+                            "speed": 1,
+                            "opacity_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "size": {
+                        "value": 3,
+                        "random": true,
+                        "anim": {
+                            "enable": false,
+                            "speed": 40,
+                            "size_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "line_linked": {
+                        "enable": true,
+                        "distance": 150,
+                        "color": "#ffffff",
+                        "opacity": 0.4,
+                        "width": 1
+                    },
+                    "move": {
+                        "enable": true,
+                        "speed": 2,
+                        "direction": "none",
+                        "random": false,
+                        "straight": false,
+                        "out_mode": "out",
+                        "bounce": false,
+                        "attract": {
+                            "enable": false,
+                            "rotateX": 600,
+                            "rotateY": 1200
+                        }
+                    }
+                },
+                "interactivity": {
+                    "detect_on": "canvas",
+                    "events": {
+                        "onhover": {
+                            "enable": true,
+                            "mode": "grab"
+                        },
+                        "onclick": {
+                            "enable": true,
+                            "mode": "push"
+                        },
+                        "resize": true
+                    },
+                    "modes": {
+                        "grab": {
+                            "distance": 140,
+                            "line_linked": {
+                                "opacity": 1
+                            }
+                        },
+                        "bubble": {
+                            "distance": 400,
+                            "size": 40,
+                            "duration": 2,
+                            "opacity": 8,
+                            "speed": 3
+                        },
+                        "repulse": {
+                            "distance": 200,
+                            "duration": 0.4
+                        },
+                        "push": {
+                            "particles_nb": 4
+                        },
+                        "remove": {
+                            "particles_nb": 2
+                        }
+                    }
+                },
+                "retina_detect": true
+            });
+        });
+    </script>
+</body>
+</html>

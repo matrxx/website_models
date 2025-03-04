@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Underwater Scene with Improved Surface</title>
+    <style>
+        body { 
+            margin: 0; 
+            overflow-x: hidden; 
+            height: 500vh; /* Allow scrolling for depth effect */
+            background: linear-gradient(to bottom, #87CEEB, #001020);
+        }
+        canvas { 
+            display: block; 
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        .instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            z-index: 100;
+        }
+    </style>
+    <!-- Load GSAP via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div class="instructions">Scroll to dive deeper. Click on the fisherman to cast the line.</div>
+
+<script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@latest/build/three.module.js";
+
+    // Scene, Camera, Renderer
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    document.body.appendChild(renderer.domElement);
+
+    // Texture Loader
+    const textureLoader = new THREE.TextureLoader();
+    
+    // Load Textures
+    const waterTexture = textureLoader.load('https://i.ibb.co/JKKrwq2/water-normal.jpg');
+    waterTexture.wrapS = THREE.RepeatWrapping;
+    waterTexture.wrapT = THREE.RepeatWrapping;
+    waterTexture.repeat.set(5, 5);
+    
+    const sandTexture = textureLoader.load('https://i.ibb.co/KrgSZS1/sand-texture.jpg');
+    sandTexture.wrapS = THREE.RepeatWrapping;
+    sandTexture.wrapT = THREE.RepeatWrapping;
+    sandTexture.repeat.set(10, 10);
+    
+    const woodTexture = textureLoader.load('https://i.ibb.co/MCn3BWy/wood-texture.jpg');
+    
+    // Sky (visible from boat)
+    const skyGeometry = new THREE.SphereGeometry(200, 32, 32);
+    const skyMaterial = new THREE.MeshBasicMaterial({
+        color: 0x87CEEB,
+        side: THREE.BackSide
+    });
+    const sky = new THREE.Mesh(skyGeometry, skyMaterial);
+    scene.add(sky);
+    
+    // Sun (daylight effect)
+    const sunGeometry = new THREE.SphereGeometry(10, 32, 32);
+    const sunMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffffcc,
+        transparent: true,
+        opacity: 0.8
+    });
+    const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+    sun.position.set(50, 80, -100);
+    scene.add(sun);
+    
+    // Sunlight glow effect
+    const sunLight = new THREE.PointLight(0xffffcc, 1, 300);
+    sunLight.position.copy(sun.position);
+    scene.add(sunLight);
+
+    // Fog (Darker as we go deeper)
+    scene.fog = new THREE.FogExp2(0x1e3a5f, 0.04);
+    renderer.setClearColor(scene.fog.color);
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0x333333);
+    scene.add(ambientLight);
+    
+    const directionalLight = new THREE.DirectionalLight(0xffffcc, 1);
+    directionalLight.position.set(0, 10, 5);
+    directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.width = 1024;
+    directionalLight.shadow.mapSize.height = 1024;
+    scene.add(directionalLight);
+    
+    // Create distinct surface and underwater zones
+    
+    // Water surface with normal map and transparency
+    const waterGeometry = new THREE.PlaneGeometry(200, 200, 50, 50);
+    const waterMaterial = new THREE.MeshPhysicalMaterial({ 
+        color: 0x0099ff,
+        transparent: true, 
+        opacity: 0.8,
+        normalMap: waterTexture,
+        normalScale: new THREE.Vector2(0.5, 0.5),
+        metalness: 0.1,
+        roughness: 0.4,
+        transmission: 0.5,
+        reflectivity: 0.5
+    });
+    const waterSurface = new THREE.Mesh(waterGeometry, waterMaterial);
+    waterSurface.rotation.x = -Math.PI / 2;
+    waterSurface.position.y = 0;
+    scene.add(waterSurface);
+    
+    // Surface water effect (waves)
+    const surfaceGeometry = new THREE.PlaneGeometry(200, 200, 128, 128);
+    const surfaceVertices = surfaceGeometry.attributes.position.array;
+    const surfaceMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0x99ccff,
+        transparent: true,
+        opacity: 0.3,
+        metalness: 0,
+        roughness: 0.2,
+        transmission: 0.9
+    });
+    const surfaceWater = new THREE.Mesh(surfaceGeometry, surfaceMaterial);
+    surfaceWater.rotation.x = -Math.PI / 2;
+    surfaceWater.position.y = 0.1;
+    scene.add(surfaceWater);
+
+    // Ocean Body (volumetric water effect)
+    const oceanBodyGeometry = new THREE.BoxGeometry(200, 40, 200);
+    const oceanBodyMaterial = new THREE.MeshStandardMaterial({
+        color: 0x0066aa,
+        transparent: true,
+        opacity: 0.3
+    });
+    const oceanBody = new THREE.Mesh(oceanBodyGeometry, oceanBodyMaterial);
+    oceanBody.position.y = -20; // Center of the ocean volume
+    scene.add(oceanBody);
+
+    // Ocean Floor with texture
+    const oceanFloor = new THREE.Mesh(
+        new THREE.PlaneGeometry(200, 200, 32, 32),
+        new THREE.MeshStandardMaterial({ 
+            color: 0xddddcc, 
+            map: sandTexture,
+            roughness: 1,
+            metalness: 0
+        })
+    );
+    oceanFloor.rotation.x = -Math.PI / 2;
+    oceanFloor.position.y = -40;
+    oceanFloor.receiveShadow = true;
+    scene.add(oceanFloor);
+
+    // Create Boat with Wood Texture that floats on surface
+    const createBoat = () => {
+        const boatGroup = new THREE.Group();
+        
+        // Boat Hull
+        const hullGeometry = new THREE.BoxGeometry(3, 1, 7);
+        const hullMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xbb8866, 
+            map: woodTexture,
+            roughness: 0.7
+        });
+        const hull = new THREE.Mesh(hullGeometry, hullMaterial);
+        hull.position.y = 0.5;
+        hull.castShadow = true;
+        boatGroup.add(hull);
+        
+        // Boat Seat
+        const seatGeometry = new THREE.BoxGeometry(2.5, 0.2, 1);
+        const seat = new THREE.Mesh(seatGeometry, hullMaterial);
+        seat.position.set(0, 1, -2);
+        boatGroup.add(seat);
+        
+        // Boat Details - Rails
+        const railGeometry = new THREE.CylinderGeometry(0.05, 0.05, 6.8);
+        const railMaterial = new THREE.MeshStandardMaterial({ color: 0xdddddd });
+        
+        const leftRail = new THREE.Mesh(railGeometry, railMaterial);
+        leftRail.rotation.x = Math.PI/2;
+        leftRail.position.set(-1.4, 1.2, 0);
+        boatGroup.add(leftRail);
+        
+        const rightRail = new THREE.Mesh(railGeometry, railMaterial);
+        rightRail.rotation.x = Math.PI/2;
+        rightRail.position.set(1.4, 1.2, 0);
+        boatGroup.add(rightRail);
+        
+        // Water splash/wake effect around boat
+        const splashGeometry = new THREE.CircleGeometry(5, 32);
+        const splashMaterial = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.3,
+            side: THREE.DoubleSide
+        });
+        const splash = new THREE.Mesh(splashGeometry, splashMaterial);
+        splash.rotation.x = -Math.PI/2;
+        splash.position.y = -0.5;
+        boatGroup.add(splash);
+        
+        // Position boat precisely at water level for floating effect
+        boatGroup.position.y = 0;
+        
+        return boatGroup;
+    };
+    
+    const boat = createBoat();
+    scene.add(boat);
+
+    // Fisherman with more detail
+    const createFisherman = () => {
+        const fishermanGroup = new THREE.Group();
+        
+        // Head
+        const headGeometry = new THREE.SphereGeometry(0.3);
+        const skinMaterial = new THREE.MeshStandardMaterial({ color: 0xe0ac69 });
+        const head = new THREE.Mesh(headGeometry, skinMaterial);
+        head.position.y = 0.3;
+        fishermanGroup.add(head);
+        
+        // Body
+        const bodyGeometry = new THREE.CylinderGeometry(0.2, 0.3, 0.8);
+        const clothesMaterial = new THREE.MeshStandardMaterial({ color: 0x3b5998 });
+        const body = new THREE.Mesh(bodyGeometry, clothesMaterial);
+        body.position.y = -0.4;
+        fishermanGroup.add(body);
+        
+        // Hat
+        const hatGeometry = new THREE.ConeGeometry(0.35, 0.3);
+        const hatMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+        const hat = new THREE.Mesh(hatGeometry, hatMaterial);
+        hat.position.y = 0.6;
+        fishermanGroup.add(hat);
+        
+        // Arms
+        const armGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.6);
+        
+        const leftArm = new THREE.Mesh(armGeometry, skinMaterial);
+        leftArm.position.set(-0.4, -0.3, 0);
+        leftArm.rotation.z = -Math.PI/4;
+        fishermanGroup.add(leftArm);
+        
+        const rightArm = new THREE.Mesh(armGeometry, skinMaterial);
+        rightArm.position.set(0.4, -0.3, 0);
+        rightArm.rotation.z = Math.PI/4;
+        fishermanGroup.add(rightArm);
+        
+        // Make the entire fisherman clickable
+        fishermanGroup.userData.clickable = true;
+        
+        // Position fisherman in the boat
+        fishermanGroup.position.set(0, 1.5, -2);
+        return fishermanGroup;
+    };
+    
+    const fisherman = createFisherman();
+    boat.add(fisherman); // Add fisherman to boat so he moves with it
+
+    // Fishing Rod
+    const rodGeometry = new THREE.CylinderGeometry(0.02, 0.01, 3);
+    const rodMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+    const fishingRod = new THREE.Mesh(rodGeometry, rodMaterial);
+    fishingRod.position.set(0.2, 0.2, 0.5);
+    fishingRod.rotation.z = -Math.PI/4;
+    fisherman.add(fishingRod); // Add to fisherman so it moves with him
+
+    // Fishing Line & Bait
+    const lineStartPosition = new THREE.Vector3(0.9, -0.3, 0.5);
+    const lineEndPosition = new THREE.Vector3(0.9, -1.5, 0.5);
+    
+    const fishingLine = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([lineStartPosition, lineEndPosition]),
+        new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 })
+    );
+    fisherman.add(fishingLine);
+
+    const bait = new THREE.Mesh(
+        new THREE.SphereGeometry(0.15),
+        new THREE.MeshStandardMaterial({ color: 0xff9900, metalness: 0.5, roughness: 0.2 })
+    );
+    bait.position.copy(lineEndPosition);
+    bait.castShadow = true;
+    fisherman.add(bait);
+
+    // Add Fish
+    const createFish = (color, x, y, z, size) => {
+        const fishGroup = new THREE.Group();
+        
+        // Fish Body
+        const bodyGeometry = new THREE.ConeGeometry(size, size*2, 12);
+        const bodyMaterial = new THREE.MeshStandardMaterial({ 
+            color: color,
+            metalness: 0.3,
+            roughness: 0.7
+        });
+        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        body.rotation.z = Math.PI/2;
+        fishGroup.add(body);
+        
+        // Fish Tail
+        const tailGeometry = new THREE.ConeGeometry(size*0.8, size, 3);
+        const tail = new THREE.Mesh(tailGeometry, bodyMaterial);
+        tail.position.x = -size*1.2;
+        tail.rotation.z = -Math.PI/2;
+        fishGroup.add(tail);
+        
+        // Fish Eye
+        const eyeGeometry = new THREE.SphereGeometry(size*0.15);
+        const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const eye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+        eye.position.set(size*0.5, size*0.3, size*0.4);
+        fishGroup.add(eye);
+        
+        const pupilGeometry = new THREE.SphereGeometry(size*0.07);
+        const pupilMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        const pupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+        pupil.position.set(size*0.55, size*0.3, size*0.45);
+        fishGroup.add(pupil);
+        
+        fishGroup.position.set(x, y, z);
+        
+        // Add swimming animation
+        const randomSpeed = 0.005 + Math.random() * 0.01;
+        const randomAmp = 1 + Math.random() * 2;
+        
+        fishGroup.userData.animation = {
+            speed: randomSpeed,
+            amplitude: randomAmp,
+            originalX: x,
+            time: Math.random() * 100
+        };
+        
+        return fishGroup;
+    };
+    
+    const fishes = [];
+    // Only create fish underwater (below y=0)
+    for (let i = 0; i < 20; i++) {
+        const x = (Math.random() - 0.5) * 40;
+        const y = -5 - Math.random() * 30; // Fish only below surface
+        const z = (Math.random() - 0.5) * 40;
+        const size = 0.3 + Math.random() * 0.3;
+        
+        // Random fish color
+        const colors = [0xff5500, 0x00aaff, 0xffcc00, 0x00ccaa, 0xff00ff];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        
+        const fish = createFish(color, x, y, z, size);
+        scene.add(fish);
+        fishes.push(fish);
+    }
+
+    // Add Corals and Underwater Plants (only near the bottom)
+    const createCoral = (x, z) => {
+        const coralGroup = new THREE.Group();
+        
+        const coralGeometry = new THREE.CylinderGeometry(0.1, 0.2, 1.5, 5);
+        const coralMaterial = new THREE.MeshStandardMaterial({ 
+            color: Math.random() > 0.5 ? 0xff5555 : 0xff55ff,
+            roughness: 0.8
+        });
+        
+        const segments = 3 + Math.floor(Math.random() * 5);
+        
+        for (let i = 0; i < segments; i++) {
+            const segment = new THREE.Mesh(coralGeometry, coralMaterial);
+            segment.position.set(
+                (Math.random() - 0.5) * 0.4,
+                0.4 + Math.random() * 0.3,
+                (Math.random() - 0.5) * 0.4
+            );
+            
+            // Random rotation for variety
+            segment.rotation.x = (Math.random() - 0.5) * 0.5;
+            segment.rotation.z = (Math.random() - 0.5) * 0.5;
+            
+            coralGroup.add(segment);
+        }
+        
+        coralGroup.position.set(x, -39.5, z); // Place on ocean floor
+        return coralGroup;
+    };
+    
+    // Add corals to the scene
+    for (let i = 0; i < 25; i++) {
+        const x = (Math.random() - 0.5) * 40;
+        const z = (Math.random() - 0.5) * 40;
+        const coral = createCoral(x, z);
+        scene.add(coral);
+    }
+
+    // Add Bubbles
+    const bubbles = [];
+    const createBubble = () => {
+        const size = 0.05 + Math.random() * 0.15;
+        const bubbleGeometry = new THREE.SphereGeometry(size);
+        const bubbleMaterial = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.2,
+            metalness: 0.1,
+            roughness: 0.1
+        });
+        
+        const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial);
+        
+        // Random position from random fish (only creates bubbles underwater)
+        const source = fishes[Math.floor(Math.random() * fishes.length)];
+        const position = source.position.clone();
+        
+        bubble.position.set(
+            position.x + (Math.random() - 0.5),
+            position.y - 0.5,
+            position.z + (Math.random() - 0.5)
+        );
+        
+        bubble.userData = {
+            speed: 0.01 + Math.random() * 0.03,
+            wobble: {
+                speed: 0.05 + Math.random() * 0.1,
+                amplitude: 0.05 + Math.random() * 0.1,
+                time: Math.random() * Math.PI * 2
+            }
+        };
+        
+        scene.add(bubble);
+        bubbles.push(bubble);
+        
+        // Remove bubble after it reaches the surface
+        setTimeout(() => {
+            scene.remove(bubble);
+            bubbles.splice(bubbles.indexOf(bubble), 1);
+        }, 10000);
+    };
+    
+    // Create bubbles occasionally
+    setInterval(createBubble, 500);
+
+    // Add seaweed
+    const createSeaweed = (x, z, height) => {
+        const seaweedGroup = new THREE.Group();
+        const segments = 5 + Math.floor(Math.random() * 5);
+        const segmentHeight = height / segments;
+        
+        const points = [];
+        for (let i = 0; i < segments + 1; i++) {
+            points.push(new THREE.Vector3(0, i * segmentHeight, 0));
+        }
+        
+        const seaweedGeometry = new THREE.TubeGeometry(
+            new THREE.CatmullRomCurve3(points),
+            segments * 3,
+            0.1 - 0.05 * (height / 5),
+            8,
+            false
+        );
+        
+        const seaweedMaterial = new THREE.MeshStandardMaterial({
+            color: 0x00aa44,
+            roughness: 0.9,
+            metalness: 0.1
+        });
+        
+        const seaweed = new THREE.Mesh(seaweedGeometry, seaweedMaterial);
+        seaweed.userData = {
+            originalPoints: points.map(p => p.clone()),
+            waveParams: {
+                speed: 0.5 + Math.random() * 0.5,
+                amplitude: 0.1 + Math.random() * 0.2,
+                phase: Math.random() * Math.PI * 2
+            }
+        };
+        
+        seaweedGroup.add(seaweed);
+        seaweedGroup.position.set(x, -40 + height / 2, z); // From ocean floor
+        
+        return seaweedGroup;
+    };
+    
+    const seaweeds = [];
+    for (let i = 0; i < 40; i++) {
+        const x = (Math.random() - 0.5) * 40;
+        const z = (Math.random() - 0.5) * 40;
+        const height = 5 + Math.random() * 10; // Taller seaweed
+        
+        const seaweed = createSeaweed(x, z, height);
+        scene.add(seaweed);
+        seaweeds.push(seaweed.children[0]);
+    }
+    
+    // Add surface effects (birds, clouds)
+    const createBird = () => {
+        const birdGroup = new THREE.Group();
+        
+        // Simple bird shape
+        const bodyGeometry = new THREE.ConeGeometry(0.1, 0.3, 4);
+        const bodyMaterial = new THREE.MeshBasicMaterial({ color: 0x333333 });
+        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        body.rotation.z = Math.PI / 2;
+        birdGroup.add(body);
+        
+        // Wings
+        const wingGeometry = new THREE.PlaneGeometry(0.6, 0.2);
+        const wingMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0x555555, 
+            side: THREE.DoubleSide
+        });
+        
+        const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
+        leftWing.position.set(0, 0, 0.2);
+        birdGroup.add(leftWing);
+        
+        const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
+        rightWing.position.set(0, 0, -0.2);
+        birdGroup.add(rightWing);
+        
+        // Animation parameters
+        birdGroup.userData = {
+            wingFlapSpeed: 0.2 + Math.random() * 0.1,
+            flightSpeed: 0.05 + Math.random() * 0.05,
+            timeOffset: Math.random() * Math.PI * 2
+        };
+        
+        // Random position above water
+        birdGroup.position.set(
+            (Math.random() - 0.5) * 100,
+            10 + Math.random() * 20,
+            (Math.random() - 0.5) * 100
+        );
+        
+        return birdGroup;
+    };
+    
+    // Add some birds
+    const birds = [];
+    for (let i = 0; i < 10; i++) {
+        const bird = createBird();
+        scene.add(bird);
+        birds.push(bird);
+    }
+    
+    // Add clouds
+    const createCloud = () => {
+        const cloudGroup = new THREE.Group();
+        
+        const numPuffs = 3 + Math.floor(Math.random() * 5);
+        for (let i = 0; i < numPuffs; i++) {
+            const size = 1 + Math.random() * 2;
+            const puffGeometry = new THREE.SphereGeometry(size);
+            const puffMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            const puff = new THREE.Mesh(puffGeometry, puffMaterial);
+            puff.position.set(
+                (Math.random() - 0.5) * 5,
+                (Math.random() - 0.5) * 2,
+                (Math.random() - 0.5) * 5
+            );
+            
+            cloudGroup.add(puff);
+        }
+        
+        cloudGroup.position.set(
+            (Math.random() - 0.5) * 150,
+            30 + Math.random() * 30,
+            (Math.random() - 0.5) * 150
+        );
+        
+        cloudGroup.userData = {
+            speed: 0.02 + Math.random() * 0.02
+        };
+        
+        return cloudGroup;
+    };
+    
+    const clouds = [];
+    for (let i = 0; i < 15; i++) {
+        const cloud = createCloud();
+        scene.add(cloud);
+        clouds.push(cloud);
+    }
+    
+    // Floating items on surface
+    const createFloatingItem = () => {
+        const types = ['leaf', 'wood', 'debris'];
+        const type = types[Math.floor(Math.random() * types.length)];
+        
+        let geometry, material;
+        
+        if (type === 'leaf') {
+            geometry = new THREE.CircleGeometry(0.5 + Math.random() * 0.5, 5);
+            material = new THREE.MeshBasicMaterial({ 
+                color: 0x00aa44, 
+                side: THREE.DoubleSide 
+            });
+        } else if (type === 'wood') {
+            geometry = new THREE.CylinderGeometry(0.2, 0.2, 1 + Math.random() * 2);
+            material = new THREE.MeshStandardMaterial({ 
+                color: 0x8B4513,
+                map: woodTexture,
+                roughness: 1
+            });
+        } else {
+            geometry = new THREE.BoxGeometry(
+                0.3 + Math.random() * 0.5,
+                0.1,
+                0.3 + Math.random() * 0.5
+            );
+            material = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
+        }
+        
+        const item = new THREE.Mesh(geometry, material);
+        
+        // Position at water level
+        item.position.set(
+            (Math.random() - 0.5) * 40, 
+            0.1,  // Slightly above water surface
+            (Math.random() - 0.5) * 40
+        );
+        
+        // Random rotation
+        item.rotation.x = Math.random() * Math.PI;
+        item.rotation.z = Math.random() * Math.PI;
+        
+        // Float parameters
+        item.userData = {
+            floatParams: {
+                speed: 0.5 + Math.random() * 0.5,
+                amplitude: 0.05 + Math.random() * 0.05,
+                phase: Math.random() * Math.PI * 2
+            },
+            driftSpeed: (Math.random() - 0.5) * 0.01
+        };
+        
+        return item;
+    };
+    
+    // Add floating items
+    const floatingItems = [];
+    for (let i = 0; i < 20; i++) {
+        const item = createFloatingItem();
+        scene.add(item);
+        floatingItems.push(item);
+    }
+
+    // Initial Camera Position (Above Surface)
+    camera.position.set(0, 10, 20);
+    camera.lookAt(0, 0, 0);
+
+    let scrollY = 0;
+    let isUnderwater = false;
+
+    // Scroll Event - Move Camera & Change Environment
+    window.addEventListener("scroll", () => {
+        scrollY = window.scrollY * 0.02; // Control scroll speed
+        camera.position.y = 10 - scrollY;
+        
+        // Detect when crossing water surface
+        if (camera.position.y <= 0 && !isUnderwater) {
+            isUnderwater = true;
+            // Transition to underwater effects
+            gsap.to(scene.fog, {
+                near: 0.1,
+                far: 30,
+                duration: 0.5
+            });
+        } else if (camera.position.y > 0 && isUnderwater) {
+            isUnderwater = false;
+            // Transition to above water effects
+            gsap.to(scene.fog, {
+                near: 80,
+                far: 150,
+                duration: 0.5
+            });
+        }
+        
+        // Adjust environment based on depth
+        if (isUnderwater) {
+            // Underwater effects
+            const depthFactor = Math.min((0 - camera.position.y) / 30, 1);
+            scene.fog.color.setRGB(0.12 - depthFactor * 0.1, 0.23 - depthFactor * 0.2, 0.4 - depthFactor * 0.3);
+            directionalLight.intensity = Math.max(1 - depthFactor * 0.8, 0.2);
+        } else {
+            // Above water effects
+            scene.fog.color.setRGB(0.53, 0.81, 0.92); // Sky blue
+            directionalLight.intensity = 1;
+        }
+        
+        renderer.setClearColor(scene.fog.color);
+    });
+
+    // Fisherman Click - Throw Bait Animation
+    let isFishing = false;
+    
+    window.addEventListener("click", (event) => {
+        if (isFishing) return;
+        
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        
+        // Calculate mouse position in normalized device coordinates
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+        
+        raycaster.setFromCamera(mouse, camera);
+        
+        // Check for intersection with fisherman
+        const intersects = raycaster.intersectObjects(scene.children, true);
+        
+        for (let i = 0; i < intersects.length; i++) {
+            let obj = intersects[i].object;
+            
+            // Traverse up to find parent with clickable flag
+            while (obj && !obj.userData.clickable) {
+                obj = obj.parent;
+            }
+            
+            if (obj && obj.userData.clickable) {
+                // Fishing animation
+                isFishing = true;
+                
+                // Animate rod movement
+                gsap.to(fishingRod.rotation, {
+                    z: -Math.PI/2.5,
+                    duration: 0.5,
+                    yoyo: true,
+                    repeat: 1,
+                    onComplete: () => {
+                        // Animate line dropping
+                        const newLineEnd = new THREE.Vector3(0.9, -10, 0.5);
+                        
+                        // Update fishing line
+                        fishingLine.geometry.dispose();
+                        fishingLine.geometry = new THREE.BufferGeometry().setFromPoints([
+                            lineStartPosition, newLineEnd
+                        ]);
+                        
+                        // Animate bait
+                        gsap.to(bait.position, {
+                            y: -10,
+                            duration: 1,
+                            ease: "power1.in",
+                            onComplete: () => {
+                                // Wait for a bite
+                                setTimeout(() => {
+                                    // Random chance to catch a fish
+                                    if (Math.random() > 0.5) {
+                                        // Catch a fish!
+                                        const caughtFish = createFish(0xff5500, 0.9, -10, 0.5, 0.3);
+                                        fisherman.add(caughtFish);
+                                        
+                                        // Animate pulling fish up
+                                        gsap.to([bait.position, caughtFish.position], {
+                                            y: -1.5, 
+                                            duration: 1.5,
+                                            ease: "elastic.out(1, 0.3)",
+                                            onComplete: () => {
+                                                // Return to original state
+                                                setTimeout(() => {
+                                                    fisherman.remove(caughtFish);
+                                                    resetFishingLine();
+                                                }, 1500);
+                                            }
+                                        });
+                                    } else {
+                                        // No fish caught
+                                        resetFishingLine();
+                                    }
+                                }, 2000);
+                            }
+                        });
+                    }
+                });
+            }
+        }
+    });
+    
+    // Reset fishing line function
+    const resetFishingLine = () => {
+        gsap.to(bait.position, {
+            y: -1.5,
+            duration: 1,
+            ease: "power1.out",
+            onComplete: () => {
+                // Reset line
+                fishingLine.geometry.dispose();
+                fishingLine.geometry = new THREE.BufferGeometry().setFromPoints([
+                    lineStartPosition, lineEndPosition
+                ]);
+                
+                isFishing = false;
+            }
+        });
+    };
+
+    // Handle window resize
+    window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Animation loop
+    const animate = () => {
+        requestAnimationFrame(animate);
+        
+        const time = performance.now() * 0.001; // Current time in seconds
+        
+        // Animate water surface
+        if (surfaceVertices) {
+            for (let i = 0; i < surfaceVertices.length; i += 3) {
+                const x = surfaceGeometry.attributes.position.getX(i/3);
+                const z = surfaceGeometry.attributes.position.getZ(i/3);
+                
+                // Create wave effect
+                const waveY = 
+                    Math.sin(x * 0.5 + time) * 0.1 +
+                    Math.sin(z * 0.3 + time * 0.8) * 0.15;
+                
+                surfaceVertices[i + 1] = waveY;
+            }
+            surfaceGeometry.attributes.position.needsUpdate = true;
+            surfaceGeometry.computeVertexNormals();
+        }
+        
+        // Update water normal map for flowing effect
+        waterTexture.offset.x = time * 0.05;
+        waterTexture.offset.y = time * 0.03;
+        
+        // Make boat float on waves
+        if (boat) {
+            const boatX = boat.position.x;
+            const boatZ = boat.position.z;
+            
+            const boatWaveY = 
+                Math.sin(boatX * 0.5 + time) * 0.1 +
+                Math.sin(boatZ * 0.3 + time * 0.8) * 0.15;
+            
+            boat.position.y = boatWaveY;
+            
+            // Gentle boat rocking
+            boat.rotation.x = Math.sin(time * 0.8) * 0.03;
+            boat.rotation.z = Math.sin(time * 0.6) * 0.02;
+        }
+        
+        // Fish swimming animation
+        fishes.forEach(fish => {
+            const { speed, amplitude, originalX, time: fishTime } = fish.userData.animation;
+            
+            // Update time
+            fish.userData.animation.time += speed;
+            const currTime = fish.userData.animation.time;
+            
+            // Wavy swimming motion
+            fish.position.x = fish.userData.animation.originalX + Math.sin(currTime) * amplitude;
+            fish.position.y += Math.sin(currTime * 2) * 0.01;
+            
+            // Rotate fish to face swimming direction
+            fish.rotation.y = Math.sin(currTime) * 0.5;
+        });
+        
+        // Bubble animation
+        bubbles.forEach(bubble => {
+            // Rise to surface
+            bubble.position.y += bubble.userData.speed;
+            
+            // Wobble effect
+            const wobble = bubble.userData.wobble;
+            wobble.time += wobble.speed;
+            
+            bubble.position.x += Math.sin(wobble.time) * wobble.amplitude * 0.02;
+            bubble.position.z += Math.cos(wobble.time * 0.7) * wobble.amplitude * 0.02;
+            
+            // Pop when they reach the surface
+            if (bubble.position.y >= 0) {
+                scene.remove(bubble);
+                const index = bubbles.indexOf(bubble);
+                if (index !== -1) {
+                    bubbles.splice(index, 1);
+                }
+            }
+        });
+        
+        // Animate seaweed
+        seaweeds.forEach(seaweed => {
+            const { speed, amplitude, phase } = seaweed.userData.waveParams;
+            const points = [];
+            
+            // Update each point in the seaweed
+            seaweed.userData.originalPoints.forEach((point, index) => {
+                if (index === 0) {
+                    // Keep base fixed
+                    points.push(point.clone());
+                } else {
+                    // Higher points sway more
+                    const swayFactor = index / seaweed.userData.originalPoints.length;
+                    const sway = Math.sin(time * speed + phase) * amplitude * swayFactor;
+                    
+                    const newPoint = point.clone();
+                    newPoint.x += sway;
+                    points.push(newPoint);
+                }
+            });
+            
+            // Update the curve
+            seaweed.geometry.dispose();
+            seaweed.geometry = new THREE.TubeGeometry(
+                new THREE.CatmullRomCurve3(points),
+                seaweed.userData.originalPoints.length * 3,
+                seaweed.geometry.parameters.radius,
+                8,
+                false
+            );
+        });
+        
+        // Animate birds
+        birds.forEach(bird => {
+            const { wingFlapSpeed, flightSpeed, timeOffset } = bird.userData;
+            
+            // Wing flapping
+            if (bird.children[1] && bird.children[2]) {
+                bird.children[1].rotation.z = Math.sin(time * wingFlapSpeed + timeOffset) * 0.3;
+                bird.children[2].rotation.z = -Math.sin(time * wingFlapSpeed + timeOffset) * 0.3;
+            }
+            
+            // Bird movement
+            bird.position.x += Math.sin(time * 0.1 + timeOffset) * 0.1;
+            bird.position.y += Math.sin(time * 0.2 + timeOffset) * 0.05;
+            bird.position.z -= flightSpeed;
+            
+            // Loop birds back into the scene
+            if (bird.position.z < -100) {
+                bird.position.z = 100;
+                bird.position.x = (Math.random() - 0.5) * 100;
+                bird.position.y = 10 + Math.random() * 20;
+            }
+        });
+        
+        // Animate clouds
+        clouds.forEach(cloud => {
+            cloud.position.x -= cloud.userData.speed;
+            
+            // Loop clouds back into the scene
+            if (cloud.position.x < -100) {
+                cloud.position.x = 100;
+                cloud.position.z = (Math.random() - 0.5) * 150;
+            }
+        });
+        
+        // Animate floating items
+        floatingItems.forEach(item => {
+            const { floatParams, driftSpeed } = item.userData;
+            
+            // Floating motion
+            item.position.y = 0.1 + Math.sin(time * floatParams.speed + floatParams.phase) * floatParams.amplitude;
+            
+            // Slow drifting
+            item.position.x += driftSpeed;
+            item.position.z += driftSpeed * 0.5;
+            
+            // Gently rotate
+            item.rotation.y += driftSpeed * 0.1;
+            
+            // Loop items back into the scene
+            if (item.position.x > 50 || item.position.x < -50 ||
+                item.position.z > 50 || item.position.z < -50) {
+                item.position.set(
+                    (Math.random() - 0.5) * 40,
+                    0.1,
+                    (Math.random() - 0.5) * 40
+                );
+            }
+        });
+        
+        // Ocean body color changes with depth (more blue near surface, more dark at depth)
+        if (oceanBody) {
+            const depthColor = new THREE.Color(0x0066aa);
+            const deepColor = new THREE.Color(0x001a33);
+            
+            // Mix colors based on camera depth
+            const depthFactor = Math.min(Math.max((0 - camera.position.y) / 40, 0), 1);
+            oceanBody.material.color.copy(depthColor).lerp(deepColor, depthFactor);
+            
+            // Adjust opacity based on camera position
+            if (camera.position.y < -5) {
+                // More transparent when underwater
+                oceanBody.material.opacity = 0.2;
+            } else {
+                // More visible at surface boundary
+                oceanBody.material.opacity = 0.3;
+            }
+        }
+        
+        renderer.render(scene, camera);
+    };
+
+    animate();
+</script>
+</body>
+</html>
