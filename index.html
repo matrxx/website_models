@@ -3,1057 +3,844 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="earth.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <title>Explore our environments</title>
+    <title>MultiMarket - Marketplace pour professionnels</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
-        
-        :root {
-            --primary-color: #0a1128;
-            --secondary-color: #0f2149;
-            --accent-color: #1b3a6b;
-            --highlight-color: #ffffff;
-            --text-color: #f0f0f0;
-            --glow-color: rgba(66, 220, 255, 0.8);
-            --wave-color: #0c3b69;
-        }
-        
+        /* Reset et styles de base */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: Arial, sans-serif;
         }
         
         body {
-            margin: 0;
-            font-family: 'Quicksand', sans-serif;
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            display: flex;
+            color: #fff;
+            line-height: 1.6;
             overflow-x: hidden;
             position: relative;
         }
-
-        /* Star background */
-        .stars {
+        
+        /* Arrière-plan dynamique avec dégradé */
+        .dynamic-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            background: linear-gradient(-45deg, #23a6d5, #23d5ab, #23a6d5, #5643cc, #6a3fc8);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
             z-index: -2;
-            overflow: hidden;
         }
         
-        .star {
-            position: absolute;
-            background-color: #fff;
-            border-radius: 50%;
-            animation: twinkle linear infinite;
-        }
-        
-        @keyframes twinkle {
-            0% { opacity: 0; }
-            50% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-        
-        /* Shooting stars */
-        .shooting-star {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 50%, rgba(255,255,255,0) 100%);
-            animation: shooting linear infinite;
-            transform: rotate(45deg);
-        }
-        
-        @keyframes shooting {
+        @keyframes gradient {
             0% {
-                transform: translateX(0) translateY(0) rotate(45deg);
-                opacity: 1;
-                width: 0;
-            }
-            30% {
-                width: 100px;
-                opacity: 1;
-            }
-            100% {
-                transform: translateX(1000px) translateY(-1000px) rotate(45deg);
-                opacity: 0;
-                width: 0;
-            }
-        }
-        
-        /* Interactive Wave Container */
-        #wave-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 20vh;
-            z-index: -1;
-            overflow: hidden;
-        }
-        
-        #wave-svg {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            bottom: 0;
-            left: 0;
-        }
-        
-        /* Wave Background Gradient */
-        .wave-bg-gradient {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 30vh;
-            background: linear-gradient(to bottom, 
-                rgba(10, 40, 95, 0) 0%, 
-                rgba(22, 80, 167, 0.2) 50%,
-                rgba(10, 40, 95, 0.3) 100%);
-            z-index: -2;
-            pointer-events: none;
-        }
-        
-        /* Floating Bubbles */
-        .bubble {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            bottom: 0;
-            animation: bubble-rise var(--duration, 8s) ease-in forwards;
-            z-index: -1;
-        }
-
-        @keyframes bubble-rise {
-            0% {
-                transform: translateY(0) translateX(0);
-                opacity: 0.7;
+                background-position: 0% 50%;
             }
             50% {
-                opacity: 0.5;
+                background-position: 100% 50%;
             }
             100% {
-                transform: translateY(-100vh) translateX(var(--drift, 20px));
-                opacity: 0;
+                background-position: 0% 50%;
             }
-        }
-
-        /* Wave sparkles - light reflections on wave peaks */
-        .sparkle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 50%;
-            bottom: 20vh;
-            animation: sparkle var(--duration, 2s) ease-in-out forwards;
-            z-index: -1;
-        }
-
-        @keyframes sparkle {
-            0% {
-                transform: scale(0);
-                opacity: 0;
-            }
-            50% {
-                transform: scale(1);
-                opacity: 0.8;
-            }
-            100% {
-                transform: scale(0);
-                opacity: 0;
-            }
-        }
-
-        /* Comet - special shooting star with head */
-        .comet {
-            position: absolute;
-            width: 3px;
-            height: 3px;
-            background: linear-gradient(to right, 
-                rgba(255, 255, 255, 0) 0%, 
-                rgba(255, 255, 255, 1) 30%, 
-                rgba(70, 190, 255, 0.8) 60%, 
-                rgba(70, 130, 255, 0.4) 100%);
-            box-shadow: 0 0 5px rgba(70, 190, 255, 0.8);
-            animation: comet var(--duration, 4s) linear forwards;
-            transform: rotate(45deg);
-            z-index: -2;
-        }
-
-        @keyframes comet {
-            0% {
-                transform: translateX(0) translateY(0) rotate(45deg);
-                opacity: 1;
-                width: 0;
-            }
-            20% {
-                width: 200px;
-                opacity: 1;
-            }
-            100% {
-                transform: translateX(1500px) translateY(-1500px) rotate(45deg);
-                opacity: 0;
-                width: 0;
-            }
-        }
-
-        /* Floating Nebula */
-        .nebula {
-            position: fixed;
-            border-radius: 50%;
-            background: radial-gradient(
-                circle,
-                rgba(70, 140, 255, 0.1) 0%,
-                rgba(90, 120, 225, 0.05) 40%,
-                transparent 80%
-            );
-            animation: nebula-fade var(--duration, 20s) ease-in-out infinite;
-            z-index: -3;
-        }
-
-        @keyframes nebula-fade {
-            0%, 100% { opacity: 0.1; }
-            50% { opacity: 0.2; }
         }
         
-        .sidebar {
-            width: 350px;
-            height: 100vh;
-            background-color: var(--secondary-color);
-            position: fixed;
-            left: 0;
-            top: 0;
-            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            padding-top: 80px;
-            padding-left: 100px;
-            margin-left: -100px;
-            z-index: 100;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .sidebar.closed {
-            transform: translateX(-100%);
-        }
-
-        .menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            width: 100%;
-        }
-
-        .menu li {
-            padding: 0;
-            margin-bottom: 5px;
-        }
-
-        .menu a {
-            text-decoration: none;
-            color: var(--text-color);
-            display: block;
-            font-size: 16px;
-            padding: 12px 25px;
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
             position: relative;
-            overflow: hidden;
-            transition: all 0.3s;
-            opacity: 0.8;
-            letter-spacing: 1px;
+        }
+        
+        /* Header */
+        header {
+            background-color: rgba(5, 25, 55, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 15px 0;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            width: 100%;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo img {
+            height: 50px;
+            width: auto;
+            margin-right: 10px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 25px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #e0e6ff;
             font-weight: 500;
         }
         
-        .menu a:before {
-            content: '';
-            position: absolute;
-            left: 0;
-            bottom: 0;
-            width: 0;
-            height: 2px;
-            background: var(--glow-color);
-            transition: width 0.3s ease;
-            box-shadow: 0 0 10px var(--glow-color);
+        .nav-links a:hover {
+            color: #4d8aff;
         }
         
-        .menu a:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-            opacity: 1;
-            transform: translateX(5px);
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
         
-        .menu a:hover:before {
-            width: 100%;
-        }
-
-        .toggle-btn {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: rgba(20, 30, 48, 0.8);
-            border: none;
-            color: var(--text-color);
-            font-size: 24px;
+        .btn {
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s;
-            z-index: 9999;
-            width: 50px;
-            height: 50px;
+            border: none;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #4d8aff;
+            color: #4d8aff;
+        }
+        
+        .btn-primary {
+            background-color: #4d8aff;
+            color: #fff;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background-color: #071a36;
+            padding: 150px 0 80px;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 42px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        
+        .hero p {
+            font-size: 18px;
+            color: #c8d8ff;
+            max-width: 700px;
+            margin: 0 auto 30px;
+        }
+        
+        .search-bar {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .search-bar input {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+        }
+        
+        .search-bar button {
+            padding: 15px 25px;
+            background-color: #4d8aff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        /* Particules animées pour l'arrière-plan */
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        
+        /* Circuit board lines comme sur l'image du logo */
+        .circuit-lines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                              radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+            z-index: -1;
+            opacity: 0.2;
+        }
+        
+        /* Categories Section */
+        .categories {
+            padding: 80px 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .section-title h2 {
+            font-size: 32px;
+            color: #fff;
+            margin-bottom: 15px;
+        }
+        
+        .section-title p {
+            color: #c8d8ff;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+        
+        .category-card {
+            background-color: #0c2c56;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .category-image {
+            height: 180px;
+            background-color: #071a36;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .category-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .category-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .category-content {
+            padding: 20px;
+        }
+        
+        .category-content h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        
+        .category-content p {
+            color: #c8d8ff;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .category-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .stores-count {
+            color: #4d8aff;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .explore-btn {
+            background-color: #0a1f44;
+            color: #e0e6ff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 80px 0;
+            background-color: #071a36;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .feature-item {
+            background-color: #0c2c56;
+            border-radius: 8px;
+            padding: 30px;
+            transition: transform 0.3s;
+        }
+        
+        .feature-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 36px;
+            color: #4d8aff;
+            margin-bottom: 20px;
+        }
+        
+        .feature-item h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        
+        .feature-item p {
+            color: #c8d8ff;
+            font-size: 15px;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            padding: 80px 0;
+            text-align: center;
+        }
+        
+        .cta-content {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .cta-content h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        
+        .cta-content p {
+            color: #c8d8ff;
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #051937;
+            padding: 60px 0 30px;
+        }
+        
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-about h3 {
+            font-size: 22px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        
+        .footer-about p {
+            color: #c8d8ff;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .social-icon {
+            width: 36px;
+            height: 36px;
+            background-color: #0a1f44;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 15px rgba(66, 220, 255, 0.3);
-            backdrop-filter: blur(4px);
+            color: #e0e6ff;
         }
         
-        .toggle-btn:hover {
-            background: var(--secondary-color);
-            transform: rotate(90deg);
-            box-shadow: 0 0 20px var(--glow-color);
-        }
-
-        .content {
-            margin-left: 280px;
-            margin-top: 20px;
-            padding: 30px;
-            width: calc(100% - 250px);
-            transition: margin-left 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55), width 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            min-height: 100vh;
-            position: relative;
-            z-index: 5;
-        }
-
-        .sidebar.closed ~ .content {
-            margin-left: 20px;
-            width: calc(100% - 20px);
-            padding-left: 70px; /* Add padding to the entire content when sidebar is closed */
-        }
-        
-        h1 {
-            font-size: 2.5rem;
+        .footer-links h4 {
+            font-size: 18px;
             margin-bottom: 20px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            color: var(--text-color);
-            position: relative;
-            padding-bottom: 15px;
-            text-shadow: 0 0 10px rgba(66, 220, 255, 0.5);
-        }
-        
-        h1::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 60px;
-            height: 4px;
-            background: var(--glow-color);
-            box-shadow: 0 0 10px var(--glow-color);
-        }
-        
-        p {
-            line-height: 1.7;
-            margin-bottom: 15px;
-            opacity: 0.9;
-            font-weight: 400;
-            max-width: 700px;
-        }
-        
-        /* Menu container */
-        .menu-container {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            margin-top: 40px;
-            position: relative;
-        }
-        
-        /* Fixed section menu and items for proper clickability */
-        .section-menu {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            height: 450px;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-        }
-
-        .menu-item {
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.4s ease;
-        }
-
-        .menu-item a {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            z-index: 5;
-        }
-
-        .menu-item::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-size: cover;
-            background-position: center;
-            transition: transform 1s ease;
-            z-index: 1;
-        }
-
-        .menu-item:hover::before {
-            transform: scale(1.1);
-        }
-
-        .section-menu:hover .menu-item:not(:hover) {
-            filter: brightness(0.5) blur(2px);
-        }
-        
-        /* Image URLs for background */
-        .planets::before {
-            background-image: url('https://static.nationalgeographic.fr/files/styles/image_3200/public/planeta-neptun-sita-ap-.webp?w=973&h=548');
-            background-color: #162d50;
-        }
-
-        .ocean::before {
-            background-image: url('https://www.areion24.news/wp-content/uploads/2019/01/shutterstock_94370293-990x556.jpg');
-            background-color: #0c4a6e;
-        }
-
-        .coming-soon::before {
-            background-image: url('https://images.unsplash.com/photo-1541185934-01b600ea069c?q=80&w=1470&auto=format&fit=crop');
-            background-color: #231250;
-        }
-
-        /* Menu item content styles */
-        .menu-item-content {
-            background-color: rgba(15, 23, 42, 0.75);
-            padding: 25px 40px;
-            border-radius: 12px;
-            text-align: center;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 30px rgba(66, 220, 255, 0.2);
-            z-index: 10;
-            position: relative;
-        }
-
-        .menu-item:hover .menu-item-content {
-            box-shadow: 0 0 30px rgba(66, 220, 255, 0.4);
-        }
-        
-        .menu-item h2 {
-            margin: 0;
-            color: white;
-            font-size: 24px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            position: relative;
-            padding-bottom: 10px;
-            font-weight: 600;
-            text-shadow: 0 0 10px rgba(66, 220, 255, 0.5);
-        }
-        
-        .menu-item h2::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40px;
-            height: 3px;
-            background: var(--glow-color);
-            box-shadow: 0 0 10px var(--glow-color);
-        }
-        
-        .menu-item-icon {
-            margin-bottom: 15px;
-            font-size: 24px;
-            color: var(--glow-color);
-            text-shadow: 0 0 10px var(--glow-color);
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.8s ease forwards;
-            opacity: 0;
-        }
-        
-        h1.fade-in { animation-delay: 0.1s; }
-        p.fade-in:nth-of-type(1) { animation-delay: 0.2s; }
-        p.fade-in:nth-of-type(2) { animation-delay: 0.3s; }
-        .menu-container.fade-in { animation-delay: 0.5s; }
-        
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-        
-        .menu-item-content {
-            animation: float 5s ease-in-out infinite;
-        }
-        
-        .menu-item:nth-child(2) .menu-item-content {
-            animation-delay: 1s;
-        }
-        
-        .menu-item:nth-child(3) .menu-item-content {
-            animation-delay: 2s;
-        }
-
-        .h3{
             color: #fff;
-            padding-top: 5px;
         }
-
-        #audio-controls {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 1000;
-        background-color: rgba(15, 23, 42, 0.75);
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s;
-        box-shadow: 0 0 15px rgba(66, 220, 255, 0.3);
-        backdrop-filter: blur(4px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    #audio-controls:hover {
-        transform: scale(1.1);
-        box-shadow: 0 0 20px rgba(66, 220, 255, 0.5);
-    }
-
-    #audio-controls i {
-        color: var(--text-color);
-        font-size: 18px;
-    }
+        
+        .footer-links ul {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            color: #c8d8ff;
+            text-decoration: none;
+        }
+        
+        .footer-links a:hover {
+            color: #4d8aff;
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid #0a1f44;
+            padding-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .copyright {
+            color: #c8d8ff;
+            font-size: 14px;
+        }
+        
+        .footer-extra {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .footer-extra a {
+            color: #c8d8ff;
+            font-size: 14px;
+            text-decoration: none;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-bottom {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .hero h1 {
+                font-size: 32px;
+            }
+            
+            .section-title h2 {
+                font-size: 28px;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- Star background -->
-    <div class="stars" id="stars"></div>
-    
-    <!-- Background gradient for waves -->
-    <div class="wave-bg-gradient"></div>
-    
-    <!-- Interactive Wave Container -->
-    <div id="wave-container">
-        <svg id="wave-svg" preserveAspectRatio="none" viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg">
-            <path id="wave-path" fill="var(--wave-color)" fill-opacity="0.9"></path>
-        </svg>
-    </div>
-    
-    <div class="sidebar" id="sidebar">
-        <ul class="menu">
-            <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
-            <li><a href="planets.html"><i class="fas fa-globe"></i> Explore the planets</a></li>
-            <li><a href="ocean.html"><i class="fas fa-water"></i> Explore the ocean</a></li>
-            <li><a href="#"><i class="fas fa-rocket"></i> Coming Soon</a></li>
-        </ul>
-    </div>
+    <!-- Header -->
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <img src="logo.jpg" alt="MultiMarket Logo">
+                <span>MultiMarket</span>
+            </div>
+            <nav class="nav-links">
+                <a href="#">Accueil</a>
+                <a href="#">Catégories</a>
+                <a href="#">Fonctionnalités</a>
+                <a href="#">À propos</a>
+                <a href="#">Contact</a>
+            </nav>
+            <div class="header-actions">
+                <button class="btn btn-outline">Se connecter</button>
+                <button class="btn btn-primary">S'inscrire</button>
+            </div>
+        </div>
+    </header>
 
-    <button class="toggle-btn" id="toggleBtn" onclick="toggleMenu()">☰</button>
+    <!-- Arrière-plan dynamique -->
+    <div class="dynamic-bg"></div>
+    
+    <!-- Particules animées pour l'effet dynamique -->
+    <div id="particles-js"></div>
 
-    <div class="content">
-        <h1 class="fade-in">Explore our environments</h1>
-        <p class="fade-in">This website is for educational and experimental content, nothing serious.</p>
-        <p class="fade-in">The goal is to learn and discover various 3D environments.</p>
-        
-        <!-- Central menu with fixed items and correct links -->
-        <div class="menu-container fade-in">
-            <div class="section-menu">
-                <div class="menu-item planets">
-                    <a href="planets.html">
-                        <div class="menu-item-content">
-                            <div class="menu-item-icon"><i class="fas fa-globe"></i></div>
-                            <h2>PLANETS</h2>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>L'univers des professionnels</h1>
+            <p>Découvrez une marketplace unique où chaque boutique exprime sa propre identité</p>
+            <div class="search-bar">
+                <input type="text" placeholder="Rechercher une boutique ou un service...">
+                <button>Explorer</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="categories">
+        <div class="container">
+            <div class="section-title">
+                <h2>Explorez par univers</h2>
+                <p>Chaque catégorie propose une expérience unique adaptée à son secteur</p>
+            </div>
+            <div class="categories-grid">
+                <!-- Catégorie Coiffure -->
+                <div class="category-card">
+                    <div class="category-image">
+                        <img src="/api/placeholder/400/250" alt="Univers Coiffure">
+                    </div>
+                    <div class="category-content">
+                        <div class="category-icon">✂️</div>
+                        <h3>Coiffure</h3>
+                        <p>Un espace dédié aux artistes de la coiffure et leurs créations</p>
+                        <div class="category-meta">
+                            <div class="stores-count">28 boutiques</div>
+                            <div class="explore-btn">Explorer</div>
                         </div>
-                    </a>
+                    </div>
                 </div>
-                <div class="menu-item ocean">
-                    <a href="ocean.html">
-                        <div class="menu-item-content">
-                            <div class="menu-item-icon"><i class="fas fa-water"></i></div>
-                            <h2>OCEAN</h2>
-                            <h3 class="h3">under construction</h3>
+                
+                <!-- Catégorie Automobile -->
+                <div class="category-card">
+                    <div class="category-image">
+                        <img src="/api/placeholder/400/250" alt="Univers Automobile">
+                    </div>
+                    <div class="category-content">
+                        <div class="category-icon">🚗</div>
+                        <h3>Automobile</h3>
+                        <p>Tout l'univers de l'automobile avec des experts passionnés</p>
+                        <div class="category-meta">
+                            <div class="stores-count">35 boutiques</div>
+                            <div class="explore-btn">Explorer</div>
                         </div>
-                    </a>
+                    </div>
                 </div>
-                <div class="menu-item coming-soon">
-                    <a href="#">
-                        <div class="menu-item-content">
-                            <div class="menu-item-icon"><i class="fas fa-rocket"></i></div>
-                            <h2>COMING SOON</h2>
+                
+                <!-- Catégorie Pâtisserie -->
+                <div class="category-card">
+                    <div class="category-image">
+                        <img src="/api/placeholder/400/250" alt="Univers Pâtisserie">
+                    </div>
+                    <div class="category-content">
+                        <div class="category-icon">🍰</div>
+                        <h3>Pâtisserie</h3>
+                        <p>Découvrez les créations des meilleurs artisans pâtissiers</p>
+                        <div class="category-meta">
+                            <div class="stores-count">42 boutiques</div>
+                            <div class="explore-btn">Explorer</div>
                         </div>
-                    </a>
+                    </div>
+                </div>
+                
+                <!-- Catégorie Artisanat -->
+                <div class="category-card">
+                    <div class="category-image">
+                        <img src="/api/placeholder/400/250" alt="Univers Artisanat">
+                    </div>
+                    <div class="category-content">
+                        <div class="category-icon">🔨</div>
+                        <h3>Artisanat</h3>
+                        <p>Un écosystème dédié aux artisans et leur savoir-faire unique</p>
+                        <div class="category-meta">
+                            <div class="stores-count">31 boutiques</div>
+                            <div class="explore-btn">Explorer</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Catégorie Mode -->
+                <div class="category-card">
+                    <div class="category-image">
+                        <img src="/api/placeholder/400/250" alt="Univers Mode">
+                    </div>
+                    <div class="category-content">
+                        <div class="category-icon">👗</div>
+                        <h3>Mode</h3>
+                        <p>La créativité des stylistes et designers à portée de clic</p>
+                        <div class="category-meta">
+                            <div class="stores-count">56 boutiques</div>
+                            <div class="explore-btn">Explorer</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Catégorie Bien-être -->
+                <div class="category-card">
+                    <div class="category-image">
+                        <img src="/api/placeholder/400/250" alt="Univers Bien-être">
+                    </div>
+                    <div class="category-content">
+                        <div class="category-icon">💆</div>
+                        <h3>Bien-être</h3>
+                        <p>Des professionnels dédiés à votre santé et votre équilibre</p>
+                        <div class="category-meta">
+                            <div class="stores-count">23 boutiques</div>
+                            <div class="explore-btn">Explorer</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>Une expérience unique</h2>
+                <p>Des fonctionnalités innovantes pour une navigation immersive</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">⭐</div>
+                    <h3>Personnalisation avancée</h3>
+                    <p>Chaque boutique bénéficie d'une identité visuelle forte et adaptée à son secteur d'activité.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Navigation intuitive</h3>
+                    <p>Une interface fluide qui permet aux visiteurs de s'immerger dans l'univers de chaque professionnel.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Expérience interactive</h3>
+                    <p>Des fonctionnalités engageantes qui captent l'attention et favorisent la conversion.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Créez votre univers professionnel</h2>
+                <p>Rejoignez notre marketplace innovante et développez votre présence en ligne avec une boutique qui vous ressemble.</p>
+                <div class="cta-buttons">
+                    <button class="btn btn-primary">Créer ma boutique</button>
+                    <button class="btn btn-outline">En savoir plus</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-about">
+                    <h3>MultiMarket</h3>
+                    <p>Une plateforme innovante qui réinvente la façon dont les professionnels présentent leurs produits et services en ligne, avec une approche centrée sur l'identité et l'expérience utilisateur.</p>
+                    <div class="social-links">
+                        <div class="social-icon">f</div>
+                        <div class="social-icon">t</div>
+                        <div class="social-icon">in</div>
+                        <div class="social-icon">ig</div>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="#">Accueil</a></li>
+                        <li><a href="#">Catégories</a></li>
+                        <li><a href="#">Fonctionnalités</a></li>
+                        <li><a href="#">Témoignages</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Professionnels</h4>
+                    <ul>
+                        <li><a href="#">Créer une boutique</a></li>
+                        <li><a href="#">Ressources</a></li>
+                        <li><a href="#">Tarification</a></li>
+                        <li><a href="#">FAQ vendeurs</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">Aide</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Mentions légales</a></li>
+                        <li><a href="#">Confidentialité</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="copyright">© 2025 MultiMarket. Tous droits réservés.</div>
+                <div class="footer-extra">
+                    <a href="#">Conditions d'utilisation</a>
+                    <a href="#">Politique de confidentialité</a>
+                    <a href="#">Cookies</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Circuit board lines pour l'effet du logo -->
+    <div class="circuit-lines"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
     <script>
-        function toggleMenu() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('closed');
-        }
-        
-        // Create and animate random elements
-        function addRandomElements() {
-            // Create bubbles container if it doesn't exist
-            let bubblesContainer = document.getElementById('bubbles-container');
-            if (!bubblesContainer) {
-                bubblesContainer = document.createElement('div');
-                bubblesContainer.id = 'bubbles-container';
-                bubblesContainer.style.position = 'fixed';
-                bubblesContainer.style.bottom = '0';
-                bubblesContainer.style.left = '0';
-                bubblesContainer.style.width = '100%';
-                bubblesContainer.style.height = '100%';
-                bubblesContainer.style.pointerEvents = 'none';
-                bubblesContainer.style.zIndex = '-1';
-                document.body.appendChild(bubblesContainer);
-            }
-            
-            // Create floating bubbles periodically
-            function createBubbles() {
-                if (Math.random() > 0.7) { // Only create bubbles 30% of the time
-                    const bubble = document.createElement('div');
-                    bubble.className = 'bubble';
-                    
-                    // Random properties
-                    const size = 3 + Math.random() * 8;
-                    const left = Math.random() * 100;
-                    const duration = 6 + Math.random() * 6;
-                    const drift = (Math.random() - 0.5) * 40;
-                    
-                    bubble.style.width = `${size}px`;
-                    bubble.style.height = `${size}px`;
-                    bubble.style.left = `${left}%`;
-                    bubble.style.setProperty('--duration', `${duration}s`);
-                    bubble.style.setProperty('--drift', `${drift}px`);
-                    
-                    bubblesContainer.appendChild(bubble);
-                    
-                    // Remove bubble after animation completes
-                    setTimeout(() => {
-                        bubble.remove();
-                    }, duration * 1000);
-                }
-                
-                // Schedule next bubble
-                setTimeout(createBubbles, 300 + Math.random() * 800);
-            }
-            
-            // Create wave sparkles periodically
-            function createSparkles() {
-                if (Math.random() > 0.6) { // Only create sparkles 40% of the time
-                    const sparkle = document.createElement('div');
-                    sparkle.className = 'sparkle';
-                    
-                    // Get the current wave path for positioning sparkles along the wave
-                    const wavePath = document.getElementById('wave-path');
-                    if (wavePath) {
-                        // Random properties
-                        const left = 10 + Math.random() * 80; // Keep away from edges
-                        const yOffset = Math.random() * 5; // Small vertical variation
-                        const duration = 1 + Math.random();
-                        
-                        sparkle.style.left = `${left}%`;
-                        sparkle.style.bottom = `calc(20vh + ${yOffset}px)`;
-                        sparkle.style.setProperty('--duration', `${duration}s`);
-                        
-                        bubblesContainer.appendChild(sparkle);
-                        
-                        // Remove sparkle after animation completes
-                        setTimeout(() => {
-                            sparkle.remove();
-                        }, duration * 1000);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configuration pour particles.js
+            particlesJS('particles-js', {
+                "particles": {
+                    "number": {
+                        "value": 80,
+                        "density": {
+                            "enable": true,
+                            "value_area": 800
+                        }
+                    },
+                    "color": {
+                        "value": "#ffffff"
+                    },
+                    "shape": {
+                        "type": "circle",
+                        "stroke": {
+                            "width": 0,
+                            "color": "#000000"
+                        },
+                        "polygon": {
+                            "nb_sides": 5
+                        }
+                    },
+                    "opacity": {
+                        "value": 0.5,
+                        "random": false,
+                        "anim": {
+                            "enable": false,
+                            "speed": 1,
+                            "opacity_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "size": {
+                        "value": 3,
+                        "random": true,
+                        "anim": {
+                            "enable": false,
+                            "speed": 40,
+                            "size_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "line_linked": {
+                        "enable": true,
+                        "distance": 150,
+                        "color": "#ffffff",
+                        "opacity": 0.4,
+                        "width": 1
+                    },
+                    "move": {
+                        "enable": true,
+                        "speed": 2,
+                        "direction": "none",
+                        "random": false,
+                        "straight": false,
+                        "out_mode": "out",
+                        "bounce": false,
+                        "attract": {
+                            "enable": false,
+                            "rotateX": 600,
+                            "rotateY": 1200
+                        }
                     }
-                }
-                
-                // Schedule next sparkle
-                setTimeout(createSparkles, 200 + Math.random() * 500);
-            }
-            
-            // Create comets occasionally
-            function createComet() {
-                if (Math.random() > 0.7) { // Rare chance of comet
-                    const comet = document.createElement('div');
-                    comet.className = 'comet';
-                    
-                    // Random properties
-                    const posX = Math.random() * 30; // Start from left side
-                    const posY = 10 + Math.random() * 50; // Upper part of screen
-                    const duration = 3 + Math.random() * 2;
-                    
-                    comet.style.left = `${posX}%`;
-                    comet.style.top = `${posY}%`;
-                    comet.style.setProperty('--duration', `${duration}s`);
-                    
-                    bubblesContainer.appendChild(comet);
-                    
-                    // Remove comet after animation completes
-                    setTimeout(() => {
-                        comet.remove();
-                    }, duration * 1000);
-                }
-                
-                // Schedule next comet check - much less frequent
-                setTimeout(createComet, 10000 + Math.random() * 15000);
-            }
-            
-            // Create subtle nebulae
-            function createNebulae() {
-                // Create 2-3 nebulae only
-                const nebulaCount = 2 + Math.floor(Math.random());
-                
-                for (let i = 0; i < nebulaCount; i++) {
-                    const nebula = document.createElement('div');
-                    nebula.className = 'nebula';
-                    
-                    // Random properties
-                    const size = 100 + Math.random() * 200;
-                    const posX = Math.random() * 100;
-                    const posY = Math.random() * 60; // Upper part of screen
-                    const duration = 15 + Math.random() * 10;
-                    
-                    nebula.style.width = `${size}px`;
-                    nebula.style.height = `${size}px`;
-                    nebula.style.left = `${posX}%`;
-                    nebula.style.top = `${posY}%`;
-                    nebula.style.setProperty('--duration', `${duration}s`);
-                    
-                    bubblesContainer.appendChild(nebula);
-                }
-            }
-            
-            // Start all animations
-            createBubbles();
-            createSparkles();
-            createComet();
-            createNebulae();
-        }
-        
-        // Wave Generator Class from waves.html
-        class WaveGenerator {
-            constructor(pathElement) {
-                this.path = pathElement;
-                this.mouseX = 0.5; // Start with centered position
-                this.mouseY = 0.5;
-                this.time = 0;
-                this.animationFrame = null;
-
-                // Smooth interpolation values
-                this.smoothMouseX = 0.5;
-                this.smoothMouseY = 0.5;
-
-                this.setupEventListeners();
-                this.animate();
-            }
-
-            setupEventListeners() {
-                window.addEventListener('mousemove', (e) => {
-                    this.mouseX = e.clientX / window.innerWidth;
-                    this.mouseY = e.clientY / window.innerHeight;
-                });
-
-                window.addEventListener('resize', () => {
-                    this.generatePath();
-                });
-                
-                // For mobile devices, use touch events
-                window.addEventListener('touchmove', (e) => {
-                    if (e.touches && e.touches[0]) {
-                        this.mouseX = e.touches[0].clientX / window.innerWidth;
-                        this.mouseY = e.touches[0].clientY / window.innerHeight;
+                },
+                "interactivity": {
+                    "detect_on": "canvas",
+                    "events": {
+                        "onhover": {
+                            "enable": true,
+                            "mode": "grab"
+                        },
+                        "onclick": {
+                            "enable": true,
+                            "mode": "push"
+                        },
+                        "resize": true
+                    },
+                    "modes": {
+                        "grab": {
+                            "distance": 140,
+                            "line_linked": {
+                                "opacity": 1
+                            }
+                        },
+                        "bubble": {
+                            "distance": 400,
+                            "size": 40,
+                            "duration": 2,
+                            "opacity": 8,
+                            "speed": 3
+                        },
+                        "repulse": {
+                            "distance": 200,
+                            "duration": 0.4
+                        },
+                        "push": {
+                            "particles_nb": 4
+                        },
+                        "remove": {
+                            "particles_nb": 2
+                        }
                     }
-                });
-            }
-
-            smoothStep(value, target, smoothness = 0.05) {
-                return value + (target - value) * smoothness;
-            }
-
-            generatePath() {
-                this.time += 0.02;
-                
-                // Smooth mouse movement
-                this.smoothMouseX = this.smoothStep(this.smoothMouseX, this.mouseX);
-                this.smoothMouseY = this.smoothStep(this.smoothMouseY, this.mouseY);
-
-                // Base wave parameters with smoother mouse influence
-                const basePoints = [
-                    { x: 0, baseY: 160 },
-                    { x: 360, baseY: 220 },
-                    { x: 720, baseY: 190 },
-                    { x: 1080, baseY: 160 },
-                    { x: 1440, baseY: 190 }
-                ];
-
-                // Modify points with wave and mouse interaction
-                const modifiedPoints = basePoints.map((point, index) => {
-                    // Gentle wave motion
-                    const waveInfluence = Math.sin(this.time + index * 0.5) * 20;
-                    
-                    // Smooth mouse influence
-                    const mouseXInfluence = Math.sin(this.smoothMouseX * Math.PI * 2) * 30;
-                    const mouseYInfluence = Math.cos(this.smoothMouseY * Math.PI * 2) * 20;
-                    
-                    // Combine influences with reduced stutter
-                    const yOffset = 
-                        waveInfluence + 
-                        mouseXInfluence * (1 - Math.abs(this.smoothMouseX - 0.5) * 2) * 0.7 + 
-                        mouseYInfluence * (1 - Math.abs(this.smoothMouseY - 0.5) * 2) * 0.7;
-
-                    return {
-                        x: point.x,
-                        y: point.baseY + yOffset
-                    };
-                });
-
-                // Construct SVG path
-                const pathString = `
-                    M0,160 
-                    Q${modifiedPoints[1].x},${modifiedPoints[1].y} 
-                    ${modifiedPoints[2].x},${modifiedPoints[2].y} 
-                    Q${modifiedPoints[3].x},${modifiedPoints[3].y} 
-                    1440,${modifiedPoints[4].y} 
-                    L1440,320 L0,320 Z
-                `;
-
-                this.path.setAttribute('d', pathString);
-            }
-
-            animate() {
-                this.generatePath();
-                this.animationFrame = requestAnimationFrame(() => this.animate());
-            }
-
-            stop() {
-                if (this.animationFrame) {
-                    cancelAnimationFrame(this.animationFrame);
-                }
-            }
-        }
-        
-        // Initialize the wave generator
-        function initWaves() {
-            const wavePath = document.getElementById('wave-svg').querySelector('path');
-            const waveGenerator = new WaveGenerator(wavePath);
-        }
-        
-        document.addEventListener("DOMContentLoaded", function() {
-            const starsContainer = document.getElementById('stars');
-            const starsCount = 200;
-            
-            // Create regular stars
-            for (let i = 0; i < starsCount; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                
-                // Random properties
-                const size = Math.random() * 3;
-                const posX = Math.random() * 100;
-                const posY = Math.random() * 100;
-                const duration = 3 + Math.random() * 7;
-                const delay = Math.random() * 5;
-                
-                // Apply styles
-                star.style.width = `${size}px`;
-                star.style.height = `${size}px`;
-                star.style.left = `${posX}%`;
-                star.style.top = `${posY}%`;
-                star.style.animationDuration = `${duration}s`;
-                star.style.animationDelay = `${delay}s`;
-                
-                // Random colors for some stars (blue tint for some)
-                if (Math.random() > 0.8) {
-                    star.style.backgroundColor = '#8aaeff';
-                } else if (Math.random() > 0.9) {
-                    star.style.backgroundColor = '#42dcff';
-                }
-                
-                // Add to container
-                starsContainer.appendChild(star);
-            }
-            
-            // Create shooting stars
-            function createShootingStar() {
-                const shootingStar = document.createElement('div');
-                shootingStar.className = 'shooting-star';
-                
-                // Random properties
-                const posX = Math.random() * 100;
-                const posY = Math.random() * 100;
-                const duration = 2 + Math.random() * 4;
-                
-                // Apply styles
-                shootingStar.style.left = `${posX}%`;
-                shootingStar.style.top = `${posY}%`;
-                shootingStar.style.animationDuration = `${duration}s`;
-                
-                // Add to container
-                starsContainer.appendChild(shootingStar);
-                
-                // Remove after animation completes
-                setTimeout(() => {
-                    shootingStar.remove();
-                }, duration * 1000);
-            }
-            
-            // Create shooting stars periodically
-            setInterval(createShootingStar, 5000);
-            
-            // Add entrance animations to elements once DOM is loaded
-            const allFadeElements = document.querySelectorAll('.fade-in');
-            allFadeElements.forEach(element => {
-                element.style.opacity = "0";
+                },
+                "retina_detect": true
             });
-            
-            setTimeout(() => {
-                allFadeElements.forEach(element => {
-                    element.style.opacity = ""; // Let the CSS animation take over
-                });
-            }, 100);
-            
-            // Initialize the interactive waves
-            initWaves();
-            
-            // Add the random elements
-            addRandomElements();
-        });
-
-        // Page Transition Function
-        function addPageTransitionEffects() {
-            // Create a transition overlay
-            const transitionOverlay = document.createElement('div');
-            transitionOverlay.style.position = 'fixed';
-            transitionOverlay.style.top = '0';
-            transitionOverlay.style.left = '0';
-            transitionOverlay.style.width = '100%';
-            transitionOverlay.style.height = '100%';
-            transitionOverlay.style.backgroundColor = 'var(--primary-color)';
-            transitionOverlay.style.zIndex = '9999';
-            transitionOverlay.style.opacity = '0';
-            transitionOverlay.style.pointerEvents = 'none';
-            transitionOverlay.style.transition = 'opacity 0.5s ease';
-            document.body.appendChild(transitionOverlay);
-
-            // Add transition to all links
-            const links = document.querySelectorAll('a');
-            links.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    // Prevent default link behavior
-                    e.preventDefault();
-                    
-                    // Get the target href
-                    const href = this.getAttribute('href');
-                    
-                    // Fade out current page
-                    transitionOverlay.style.opacity = '1';
-                    transitionOverlay.style.pointerEvents = 'auto';
-                    
-                    // Navigate after transition
-                    setTimeout(() => {
-                        window.location.href = href;
-                    }, 500);
-                });
-            });
-
-            // Handle page load and exit transitions
-            window.addEventListener('pageshow', function(event) {
-                transitionOverlay.style.opacity = '0';
-                
-                // Allow interactions after transition completes
-                setTimeout(() => {
-                    transitionOverlay.style.pointerEvents = 'none';
-                }, 500);
-            });
-        }
-
-        // Add page transition effects
-        document.addEventListener("DOMContentLoaded", function() {
-            addPageTransitionEffects();
         });
     </script>
-
-    <!-- Audio elements -->
-<audio id="ambient-sound" loop preload="auto">
-    <source src="audio.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
-</audio>
-
-<div id="audio-controls" onclick="toggleAudio()">
-    <i class="fas fa-volume-mute" id="audio-icon"></i>
-</div>
-
-<script>
-    // Audio management
-    let audioPlaying = false;
-    const ambientSound = document.getElementById('ambient-sound');
-    const audioIcon = document.getElementById('audio-icon');
-    
-    // Set initial volume very low for subtle background effect
-    ambientSound.volume = 0.2;
-    
-    function toggleAudio() {
-        if (audioPlaying) {
-            ambientSound.pause();
-            audioIcon.className = 'fas fa-volume-mute';
-        } else {
-            // Play audio with a fade-in effect
-            ambientSound.play();
-            fadeAudioIn();
-            audioIcon.className = 'fas fa-volume-up';
-        }
-        audioPlaying = !audioPlaying;
-    }
-    
-    function fadeAudioIn() {
-        // Start with very low volume
-        ambientSound.volume = 0.01;
-        
-        // Gradually increase volume
-        let fadeInterval = setInterval(() => {
-            if (ambientSound.volume < 0.2) {
-                ambientSound.volume += 0.01;
-            } else {
-                clearInterval(fadeInterval);
-            }
-        }, 100);
-    }
-</script>
 </body>
 </html>
